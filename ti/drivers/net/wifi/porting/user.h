@@ -970,6 +970,16 @@ typedef signed int _SlFd_t;
 
 
 /*!
+    \brief  This function return the thread ID
+
+    \return upon successful return the thread ID
+            Otherwise, return NULL
+    \note       belongs to \ref configuration_sec
+    \warning
+*/
+#define sl_GetThreadID()                  pthread_self()
+
+/*!
     \brief  This function unlock a locking object.
 
     \param  pLockObj    -   pointer to the locking object control block

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -93,67 +93,99 @@ extern "C" {
 #define HTTPClient_SECURE_PORT                           (443)
 
 /* HTTP response header fields */
-#define HTTPClient_HFIELD_RES_AGE                        (0)
-#define HTTPClient_HFIELD_RES_ALLOW                      (1)
-#define HTTPClient_HFIELD_RES_CACHE_CONTROL              (2)
-#define HTTPClient_HFIELD_RES_CONNECTION                 (3)
-#define HTTPClient_HFIELD_RES_CONTENT_ENCODING           (4)
-#define HTTPClient_HFIELD_RES_CONTENT_LANGUAGE           (5)
-#define HTTPClient_HFIELD_RES_CONTENT_LENGTH             (6)
-#define HTTPClient_HFIELD_RES_CONTENT_LOCATION           (7)
-#define HTTPClient_HFIELD_RES_CONTENT_RANGE              (8)
-#define HTTPClient_HFIELD_RES_CONTENT_TYPE               (9)
-#define HTTPClient_HFIELD_RES_DATE                       (10)
-#define HTTPClient_HFIELD_RES_ETAG                       (11)
-#define HTTPClient_HFIELD_RES_EXPIRES                    (12)
-#define HTTPClient_HFIELD_RES_LAST_MODIFIED              (13)
-#define HTTPClient_HFIELD_RES_LOCATION                   (14)
-#define HTTPClient_HFIELD_RES_PROXY_AUTHENTICATE         (15)
-#define HTTPClient_HFIELD_RES_RETRY_AFTER                (16)
-#define HTTPClient_HFIELD_RES_SERVER                     (17)
-#define HTTPClient_HFIELD_RES_SET_COOKIE                 (18)
-#define HTTPClient_HFIELD_RES_TRAILER                    (19)
-#define HTTPClient_HFIELD_RES_TRANSFER_ENCODING          (20)
-#define HTTPClient_HFIELD_RES_UPGRADE                    (21)
-#define HTTPClient_HFIELD_RES_VARY                       (22)
-#define HTTPClient_HFIELD_RES_VIA                        (23)
-#define HTTPClient_HFIELD_RES_WWW_AUTHENTICATE           (24)
-#define HTTPClient_HFIELD_RES_WARNING                    (25)
+#define HTTPClient_HFIELD_RES_AGE                        (0)  /**< @httpresp{Age} */
+#define HTTPClient_HFIELD_RES_ALLOW                      (1)  /**< @httpresp{Allow} */
+#define HTTPClient_HFIELD_RES_CACHE_CONTROL              (2)  /**< @httpresp{Cache-Control} */
+#define HTTPClient_HFIELD_RES_CONNECTION                 (3)  /**< @httpresp{Connection} */
+#define HTTPClient_HFIELD_RES_CONTENT_ENCODING           (4)  /**< @httpresp{Content-Encoding} */
+#define HTTPClient_HFIELD_RES_CONTENT_LANGUAGE           (5)  /**< @httpresp{Content-Language} */
+#define HTTPClient_HFIELD_RES_CONTENT_LENGTH             (6)  /**< @httpresp{Content-Length} */
+#define HTTPClient_HFIELD_RES_CONTENT_LOCATION           (7)  /**< @httpresp{Content-Location} */
+#define HTTPClient_HFIELD_RES_CONTENT_RANGE              (8)  /**< @httpresp{Content-Range} */
+#define HTTPClient_HFIELD_RES_CONTENT_TYPE               (9)  /**< @httpresp{Content-Type} */
+#define HTTPClient_HFIELD_RES_DATE                       (10) /**< @httpresp{Date} */
+#define HTTPClient_HFIELD_RES_ETAG                       (11) /**< @httpresp{ETag} */
+#define HTTPClient_HFIELD_RES_EXPIRES                    (12) /**< @httpresp{Expires} */
+#define HTTPClient_HFIELD_RES_LAST_MODIFIED              (13) /**< @httpresp{Last-Modified} */
+#define HTTPClient_HFIELD_RES_LOCATION                   (14) /**< @httpresp{Location} */
+#define HTTPClient_HFIELD_RES_PROXY_AUTHENTICATE         (15) /**< @httpresp{Proxy-Authenticate} */
+#define HTTPClient_HFIELD_RES_RETRY_AFTER                (16) /**< @httpresp{Retry-After} */
+#define HTTPClient_HFIELD_RES_SERVER                     (17) /**< @httpresp{Server} */
+#define HTTPClient_HFIELD_RES_SET_COOKIE                 (18) /**< @httpresp{Set-Cookie} */
+#define HTTPClient_HFIELD_RES_TRAILER                    (19) /**< @httpresp{Trailer} */
+#define HTTPClient_HFIELD_RES_TRANSFER_ENCODING          (20) /**< @httpresp{Transfer-Encoding} */
+#define HTTPClient_HFIELD_RES_UPGRADE                    (21) /**< @httpresp{Upgrade} */
+#define HTTPClient_HFIELD_RES_VARY                       (22) /**< @httpresp{Vary} */
+#define HTTPClient_HFIELD_RES_VIA                        (23) /**< @httpresp{Via} */
+#define HTTPClient_HFIELD_RES_WWW_AUTHENTICATE           (24) /**< @httpresp{Www-Authenticate} */
+#define HTTPClient_HFIELD_RES_WARNING                    (25) /**< @httpresp{Warning} */
 
 #define HTTPClient_REQUEST_HEADER_MASK                   (0x80000000)
 
 /* HTTP request header fields */
+/** @httpreq{Accept} */
 #define HTTPClient_HFIELD_REQ_ACCEPT                     (26                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Accept-Charset} */
 #define HTTPClient_HFIELD_REQ_ACCEPT_CHARSET             (27                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Accept-Encoding} */
 #define HTTPClient_HFIELD_REQ_ACCEPT_ENCODING            (28                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Accept-Language} */
 #define HTTPClient_HFIELD_REQ_ACCEPT_LANGUAGE            (29                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Allow} */
 #define HTTPClient_HFIELD_REQ_ALLOW                      (HTTPClient_HFIELD_RES_ALLOW               | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Authorization} */
 #define HTTPClient_HFIELD_REQ_AUTHORIZATION              (30                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Cache-Control} */
 #define HTTPClient_HFIELD_REQ_CACHE_CONTROL              (HTTPClient_HFIELD_RES_CACHE_CONTROL       | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Connection} */
 #define HTTPClient_HFIELD_REQ_CONNECTION                 (HTTPClient_HFIELD_RES_CONNECTION          | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Content-Encoding} */
 #define HTTPClient_HFIELD_REQ_CONTENT_ENCODING           (HTTPClient_HFIELD_RES_CONTENT_ENCODING    | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Content-Language} */
 #define HTTPClient_HFIELD_REQ_CONTENT_LANGUAGE           (HTTPClient_HFIELD_RES_CONTENT_LANGUAGE    | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Location} */
 #define HTTPClient_HFIELD_REQ_CONTENT_LOCATION           (HTTPClient_HFIELD_RES_CONTENT_LOCATION    | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Content-Type} */
 #define HTTPClient_HFIELD_REQ_CONTENT_TYPE               (HTTPClient_HFIELD_RES_CONTENT_TYPE        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Cookie} */
 #define HTTPClient_HFIELD_REQ_COOKIE                     (31                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Date} */
 #define HTTPClient_HFIELD_REQ_DATE                       (HTTPClient_HFIELD_RES_DATE                | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Expect} */
 #define HTTPClient_HFIELD_REQ_EXPECT                     (32                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Forwarded} */
 #define HTTPClient_HFIELD_REQ_FORWARDED                  (33                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{From} */
 #define HTTPClient_HFIELD_REQ_FROM                       (34                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Host} */
 #define HTTPClient_HFIELD_REQ_HOST                       (35                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{If-Match} */
 #define HTTPClient_HFIELD_REQ_IF_MATCH                   (36                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{If-Modified-Since} */
 #define HTTPClient_HFIELD_REQ_IF_MODIFIED_SINCE          (37                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{If-None-Match} */
 #define HTTPClient_HFIELD_REQ_IF_NONE_MATCH              (38                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{If-Range} */
 #define HTTPClient_HFIELD_REQ_IF_RANGE                   (39                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{If-Unmodified-Since} */
 #define HTTPClient_HFIELD_REQ_IF_UNMODIFIED_SINCE        (40                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Origin} */
 #define HTTPClient_HFIELD_REQ_ORIGIN                     (41                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Proxy-Authorization} */
 #define HTTPClient_HFIELD_REQ_PROXY_AUTHORIZATION        (42                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Range} */
 #define HTTPClient_HFIELD_REQ_RANGE                      (43                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{TE} */
 #define HTTPClient_HFIELD_REQ_TE                         (44                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Transfer-Encoding} */
 #define HTTPClient_HFIELD_REQ_TRANSFER_ENCODING          (HTTPClient_HFIELD_RES_TRANSFER_ENCODING   | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Upgrade} */
 #define HTTPClient_HFIELD_REQ_UPGRADE                    (HTTPClient_HFIELD_RES_UPGRADE             | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{User-Agent} */
 #define HTTPClient_HFIELD_REQ_USER_AGENT                 (45                                        | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Via} */
 #define HTTPClient_HFIELD_REQ_VIA                        (HTTPClient_HFIELD_RES_VIA                 | HTTPClient_REQUEST_HEADER_MASK)
+/** @httpreq{Warning} */
 #define HTTPClient_HFIELD_REQ_WARNING                    (HTTPClient_HFIELD_RES_WARNING             | HTTPClient_REQUEST_HEADER_MASK)
 
 #define HTTPClient_MAX_NUMBER_OF_HEADER_FIELDS           (46)
@@ -324,7 +356,7 @@ extern "C" {
 /** If proxy is set, this flag makes the connection without the proxy */
 #define HTTPClient_IGNORE_PROXY                (0x01)
 
-/* If the user already added "Host:" header, set this flag */
+/** If the user already added "Host:" header, set this flag */
 #define HTTPClient_HOST_EXIST                  (0x02)
 
 /* HTTPClient_setHeader flags */

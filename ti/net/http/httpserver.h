@@ -69,6 +69,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <sys/socket.h>
+#include <ti/net/slnetsock.h>
 
 #include "urlhandler.h"
 
@@ -176,13 +177,33 @@ extern void HTTPServer_init(void);
  */
 extern void HTTPServer_Params_init(HTTPServer_Params *params);
 
-/*!
+/**
+ *  @brief Attach security params to the created, but not yet initialized server
+ *
+ *  @param[in]  srv  Pointer to the server that will take on the attributes.
+ *  @param[in]  securityAttributes A list of security objects as detailed in
+ *                                 slnetsock.h.
+ *  @param      beginSecurely Whether to activate security right away or not.
+ *                            This is typically set to true.
+ *
+ *  @remark     The securityAttributes passed to this function must remain
+ *              in memory for the duration of the program. They cannot be
+ *              safely freed before the server has been deleted.
+ *  @remark     Call this function before HTTPServer_serveSelect.
+ *              beginSecurely is typically set to true as there is currently
+ *              no way to activate security after this function has been called
+ *              and returns.
+ */
+extern void HTTPServer_enableSecurity(HTTPServer_Handle srv,
+        SlNetSockSecAttrib_t * securityAttributes, bool beginSecurely);
+
+/**
  *  @brief Create an HTTPServer instance
  *
- *  @param[in] urlh    Array of URLHandler setup descriptors
- *  @param numURLh     Number of elements in the @c urlh array
- *  @param[in] params  Optional parameters to specify characteristics - use
- *                     NULL for defaults
+ *  @param[in]  urlh    Array of URLHandler setup descriptors
+ *  @param      numURLh Number of elements in the @c urlh array
+ *  @param[in]  params  Optional parameters to specify characteristics - use
+ *                      NULL for defaults
  *
  *  @httpserver_init_precondition
  *
@@ -370,6 +391,15 @@ extern void HTTPServer_requestSend(URLHandler_Session urls);
 
 extern void HTTPServer_stopSession(URLHandler_Session urls);
 /** @endcond */
+
+/**
+ *  @brief Obtain the session's security status.
+ *
+ *  @param      sess    A handle containing session state.
+ *
+ *  @sa HTTPServer_enableSecurity()
+ */
+extern bool HTTPServer_isSessionSecure(URLHandler_Session sess);
 
 /*! @} */
 #ifdef __cplusplus

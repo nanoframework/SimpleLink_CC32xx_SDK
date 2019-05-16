@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2018, Texas Instruments Incorporated
+ * Copyright (c) 2014-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -698,7 +698,7 @@ int_fast32_t UARTCC32XX_write(UART_Handle handle, const void *buffer,
 
     key = HwiP_disable();
 
-    if (object->writeCount) {
+    if (object->writeCount || UARTBusy(hwAttrs->baseAddr)) {
         HwiP_restore(key);
         DebugP_log1("UART:(%p) Could not write data, uart in use.",
             hwAttrs->baseAddr);

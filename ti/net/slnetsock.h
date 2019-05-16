@@ -1829,6 +1829,9 @@ int32_t SlNetSock_secAttribSet(SlNetSockSecAttrib_t *secAttrib, SlNetSockSecAttr
 
     \slnetsock_init_precondition
 
+    \remark     If the return value indicates failure, the socket should be
+                closed.
+
     \remark     If \c secAttrib is \c NULL, the session will be started with
                 default security settings.
 

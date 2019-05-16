@@ -542,8 +542,7 @@ const _SlActionLookup_t _SlActionLookupTable[] =
     {NETAPP_RECEIVE_ID, SL_OPCODE_NETAPP_RECEIVE, (_SlSpawnEntryFunc_t)_SlNetAppHandleAsync_NetAppReceive},
     {START_STOP_ID, SL_OPCODE_DEVICE_STOP_ASYNC_RESPONSE,(_SlSpawnEntryFunc_t)_SlDeviceHandleAsync_Stop},
     {NETUTIL_CMD_ID, SL_OPCODE_NETUTIL_COMMANDASYNCRESPONSE,(_SlSpawnEntryFunc_t)_SlNetUtilHandleAsync_Cmd},
-    {CLOSE_ID, SL_OPCODE_SOCKET_SOCKETCLOSEASYNCEVENT,(_SlSpawnEntryFunc_t)_SlSocketHandleAsync_Close},
-    {START_TLS_ID, SL_OPCODE_SOCKET_SOCKETASYNCEVENT,(_SlSpawnEntryFunc_t)_SlSocketHandleAsync_StartTLS}
+    {CLOSE_ID, SL_OPCODE_SOCKET_SOCKETCLOSEASYNCEVENT,(_SlSpawnEntryFunc_t)_SlSocketHandleAsync_Close}
 };
 
 
@@ -1429,13 +1428,6 @@ _SlReturnVal_t _SlDrvMsgRead(_u16* outMsgReadLen, _u8** pOutAsyncBuf)
                    {
                        NWP_IF_READ_CHECK(g_pCB->FD, &buffer[ExpArgSize], AlignedLengthRecv);
                    }
-                   /*  copy the unaligned part, if any */
-                   if( LengthToCopy > 0)
-                   {
-                       NWP_IF_READ_CHECK(g_pCB->FD,TailBuffer,4);
-                       /*  copy TailBuffer unaligned part (1/2/3 bytes) */
-                       sl_Memcpy(&buffer[ExpArgSize + AlignedLengthRecv], TailBuffer, LengthToCopy);
-                   }
                }
 
                SL_DRV_PROTECTION_OBJ_UNLOCK();
@@ -2316,7 +2308,7 @@ _SlReturnVal_t _SlDrvProtectAsyncRespSetting(_u8 *pAsyncRsp, _SlActionID_e Actio
 _u8 _SlDrvIsSpawnOwnGlobalLock()
 {
 #ifdef SL_PLATFORM_MULTI_THREADED
-    _u32 ThreadId = (_i32)pthread_self();
+    _u32 ThreadId = (_i32)sl_GetThreadID();
     return _SlInternalIsItSpawnThread(ThreadId);
 #else
     return (gGlobalLockContextOwner == GLOBAL_LOCK_CONTEXT_OWNER_SPAWN);

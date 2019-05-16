@@ -114,7 +114,7 @@
 #define LOOPBACKADDR    0x7F000001 /* 127.0.0.1 */
 
 #define DEFAULT_TIMEOUT 60
-#define DEFAULT_MAXLINELEN 128
+#define DEFAULT_MAXLINELEN 256
 #define DEFAULT_MAXURILEN 112
 #define DEFAULT_MAXSESSIONS 16
 
@@ -143,9 +143,11 @@ typedef struct HTTPServer_Object {
     int maxSessions;
     int numURLh;
     bool stop;
+    bool isSecure;
     pthread_mutex_t sendMutex;
     mqd_t sendMq;
     Session * sessions;
+    SlNetSockSecAttrib_t * secAttribs;
     URLHandler_Setup setup[];
 } HTTPServer_Object;
 
@@ -578,12 +580,20 @@ void HTTPServer_exit(void)
     /* TODO: can you remove a Registry entry? */
 }
 
-void HTTPSrv_Params_init(HTTPServer_Params *params)
+void HTTPServer_Params_init(HTTPServer_Params *params)
 {
     params->timeout = DEFAULT_TIMEOUT;
     params->maxLineLen = DEFAULT_MAXLINELEN;
     params->maxURILen = DEFAULT_MAXURILEN;
     params->maxSessions = DEFAULT_MAXSESSIONS;
+}
+
+void HTTPServer_enableSecurity(HTTPServer_Handle srv,
+                        SlNetSockSecAttrib_t * securityAttributes,
+                        bool beginSecurely)
+{
+    srv->secAttribs = securityAttributes;
+    srv->isSecure = beginSecurely;
 }
 
 HTTPServer_Handle HTTPServer_create(const URLHandler_Setup * setup, int numURLh,
@@ -617,9 +627,11 @@ HTTPServer_Handle HTTPServer_create(const URLHandler_Setup * setup, int numURLh,
         }
 
         srv->stop = false;
+        srv->isSecure = false;
         srv->sessions = NULL;
         srv->sendMq = (mqd_t) -1;
         srv->skt = -1;
+        srv->secAttribs = NULL;
 #ifdef __linux__
         srv->cmdfd = eventfd(0, 0);
 #else
@@ -806,6 +818,15 @@ int HTTPServer_serveSelect(HTTPServer_Handle srv, const struct sockaddr * addr,
     srv->isPortSet = true;
 #endif
 
+    if ((srv->secAttribs != NULL) && (srv->isSecure)) {
+        status = SlNetSock_startSec(srv->skt, srv->secAttribs,
+                                    SLNETSOCK_SEC_BIND_CONTEXT_ONLY |
+                                    SLNETSOCK_SEC_IS_SERVER);
+        if (status < 0) {
+            goto selectFail;
+        }
+    }
+
     if ((status = bind(srv->skt, addr, len)) == -1) {
         status = HTTPServer_EBINDFAIL;
         goto selectFail;
@@ -878,6 +899,16 @@ int HTTPServer_serveSelect(HTTPServer_Handle srv, const struct sockaddr * addr,
             }
             else {
                 addSession(srv, sc);
+
+                if ((srv->secAttribs != NULL) && (srv->isSecure)) {
+                    /* Start the tls session between server and new client*/
+                    status = SlNetSock_startSec(sc, srv->secAttribs,
+                                SLNETSOCK_SEC_START_SECURITY_SESSION_ONLY);
+                    if (status < 0) {
+                        goto selectFail;
+                    }
+                }
+
             }
         }
 
@@ -1056,4 +1087,11 @@ void HTTPServer_stopSession(URLHandler_Session urls)
     session->stop = true;
 
     Log_print0(Diags_EXIT, "HTTPServer_stopSession> exit");
+}
+
+bool HTTPServer_isSessionSecure(URLHandler_Session sess)
+{
+    Session * session = (Session *)sess;
+
+    return session->srv->isSecure;
 }

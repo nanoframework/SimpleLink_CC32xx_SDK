@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -534,6 +534,15 @@ void GPIO_setCallback(uint_least8_t index, GPIO_CallbackFxn callback)
     DebugP_assert(initCalled && index < GPIOCC32XX_config.numberOfCallbacks);
     DebugP_assert(*((uint16_t *) config) != GPIOCC32XX_GPIO_26 &&
         *((uint16_t *) config) != GPIOCC32XX_GPIO_27);
+
+    /*
+     * Ignore bogus callback indexes.
+     * Required to prevent out-of-range callback accesses if
+     * there are configured pins without callbacks
+     */
+    if (index >= GPIOCC32XX_config.numberOfCallbacks) {
+        return;
+    }
 
     /*
      * plug the pin index into the corresponding

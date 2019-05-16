@@ -343,6 +343,7 @@ typedef enum
 #define SL_WLAN_GENERAL_PARAM_ANT_SELECTION_CONFIG        (40)
 #define SL_WLAN_GENERAL_PARAM_ANT_SELECTION_SET           (41)
 #define SL_WLAN_GENERAL_PARAM_ANT_SELECTION_GET           (42)
+#define SL_WLAN_GENERAL_PARAM_EXT_CONNECTION_INFO         (44)
 
 
 /* SmartConfig CIPHER options */
@@ -906,6 +907,13 @@ typedef struct SetAntennaCmd
     SlWlanAntIndex_e                 AntIndex;                        /* antenna index - 1, 2 or toggle*/
 }SetAntennaIndex_t;
 
+typedef struct
+{
+    _u16 BeaconInterval; // Represented in Time Units (TU), where 1 TU equal to 1.024 msec. Range: [15-65535]
+    _u8  DTIMPeriod;     // Range: [1-255]
+    _u8  reserved[17];   // For future use
+}SlWlanExtConnectionInfo_t;
+
 
 typedef  _i8    SlWlanRxFilterID_t; /* Unique filter ID which is allocated by the system , negative number means error */
 
@@ -1444,7 +1452,7 @@ _i16 sl_WlanProfileDel(const _i16 Index);
     - Auto Connect: If is set, the CC31xx device tries to automatically reconnect to one of its stored profiles,
       each time the connection fails or the device is rebooted. To set this option, use: 
     \code    
-        sl_WlanPolicySet(SL_WLAN_POLICY_CONNECTION,SL_WLAN_CONNECTION_POLICY(1,0,0,0),NULL,0) 
+        sl_WlanPolicySet(SL_WLAN_POLICY_CONNECTION,SL_WLAN_CONNECTION_POLICY(1,0,0,0),NULL,0);
     \endcode
     <br>
 
@@ -1741,6 +1749,7 @@ _i16 sl_WlanGetNetworkList(const _u8 Index,const  _u8 Count, SlWlanNetworkEntry_
 _i16 sl_WlanGetExtNetworkList(const _u8 Index,const  _u8 Count, SlWlanExtNetworkEntry_t *pEntries);
 #endif
 
+
 /*!
     \brief   Start collecting wlan RX statistics, for unlimited time.
 
@@ -1750,7 +1759,7 @@ _i16 sl_WlanGetExtNetworkList(const _u8 Index,const  _u8 Count, SlWlanExtNetwork
 
     \sa      sl_WlanRxStatStop      sl_WlanRxStatGet
     \note    Belongs to \ref ext_api
-    \warning This API is deprecated and should be removed for next release
+    \warning
     \par     Example
 
     - Getting wlan RX statistics:
@@ -1771,9 +1780,9 @@ _i16 sl_WlanGetExtNetworkList(const _u8 Index,const  _u8 Count, SlWlanExtNetwork
         sl_SetSockOpt(rawSocket,SL_SOL_SOCKET,SL_SO_RCVTIMEO, &timeval, sizeof(timeval));    // Enable receive timeout
         status = sl_Recv(rawSocket, DataFrame, sizeof(DataFrame), 0);
 
-        Sleep(1000); // sleep for 1 sec
+        sleep(1); // sleep for 1 sec
         sl_WlanRxStatGet(&rxStat,0); // statistics has been cleared upon read
-        Sleep(1000); // sleep for 1 sec
+        sleep(1); // sleep for 1 sec
         sl_WlanRxStatGet(&rxStat,0);
     }
     \endcode
@@ -1782,20 +1791,6 @@ _i16 sl_WlanGetExtNetworkList(const _u8 Index,const  _u8 Count, SlWlanExtNetwork
 _i16 sl_WlanRxStatStart(void);
 #endif
 
-/*!
-    \brief    Stop collecting wlan RX statistic, (if previous called sl_WlanRxStatStart)
-
-    \par      Parameters
-              None
-    \return   Zero on success, or negative error code on failure
-
-    \sa       sl_WlanRxStatStart      sl_WlanRxStatGet
-    \note     Belongs to \ref ext_api
-    \warning  This API is deprecated and should be removed for next release
-*/
-#if _SL_INCLUDE_FUNC(sl_WlanRxStatStop)
-_i16 sl_WlanRxStatStop(void);
-#endif
 
 
 /*!
@@ -1811,6 +1806,20 @@ _i16 sl_WlanRxStatStop(void);
 */
 #if _SL_INCLUDE_FUNC(sl_WlanRxStatGet)
 _i16 sl_WlanRxStatGet(SlWlanGetRxStatResponse_t *pRxStat,const _u32 Flags);
+#endif
+/*!
+    \brief    Stop collecting wlan RX statistic, (if previous called sl_WlanRxStatStart)
+
+    \par      Parameters
+              None
+    \return   Zero on success, or negative error code on failure
+
+    \sa       sl_WlanRxStatStart      sl_WlanRxStatGet
+    \note     Belongs to \ref ext_api
+    \warning
+*/
+#if _SL_INCLUDE_FUNC(sl_WlanRxStatStop)
+_i16 sl_WlanRxStatStop(void);
 #endif
 
 
@@ -1832,7 +1841,7 @@ _i16 sl_WlanRxStatGet(SlWlanGetRxStatResponse_t *pRxStat,const _u32 Flags);
     \param[in]  InactivityTimeoutSec -      The period of time (in seconds) the system waits before it automatically
                                             stops the provisioning process when no activity is detected.
                                             set to 0 in order to stop provisioning. Minimum InactivityTimeoutSec is 30 seconds.
-    \param[in]  pSmartConfigKey             Smart Config key: public key for smart config process (relevant for smart config only)
+    \param[in]  pSmartConfigKey             Smart Config key: public key for smart config process - must be 16 chars (relevant for smart config only)
     \param[in]  Flags                       Can have the following values:
                                                    - SL_WLAN_PROVISIONING_CMD_FLAG_EXTERNAL_CONFIRMATION - Confirmation phase will be completed externally by host (e.g. via cloud assist)
 
@@ -2230,10 +2239,10 @@ _i16 sl_WlanSetMode(const _u8  Mode);
     \endcode
     <br>
 
-        - SL_WLAN_GENERAL_PARAM_OPT_SCAN_PARAMS:
+        - SL_WLAN_GENERAL_PARAM_OPT_SCAN_PARAMS_5G:
     \code
         SlWlanScanParam5GCommand_t ScanParamConfig5G;
-        _u16 Option = WLAN_GENERAL_PARAM_OPT_SCAN_PARAMS_5G;
+        _u16 Option = SL_WLAN_GENERAL_PARAM_OPT_SCAN_PARAMS_5G;
         _u16 OptionLen = sizeof(SlWlanScanParam5GCommand_t);
         // 5.0G channels bits order: 36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132,
         //                          136, 140, 144, 149, 153, 157, 161, 165, 169, 184, 188, 192, 196 
@@ -2330,9 +2339,9 @@ _i16 sl_WlanSet(const _u16 ConfigId ,const _u16 ConfigOpt,const _u16 ConfigLen,c
                               - <b>SL_WLAN_CFG_AP_ACCESS_LIST_ID</b>
                                 -  The option is the start index in the access list \n
                                       Get the AP access list from start index, the number of entries in the list is extracted from the request length.
-                              - <b>SL_WLAN_GENERAL_PARAM_ANT_SELECTION_GET</b>
-                                      Getting the desired antenna when antenna selection is set to manual mode. Applicable to CC3x20 devices only.
                           - <b>SL_WLAN_CFG_GENERAL_PARAM_ID</b>
+                              - <b>SL_WLAN_GENERAL_PARAM_ANT_SELECTION_GET</b> \n 
+                                      Getting the desired antenna when antenna selection is set to manual mode. Applicable to CC3x20 devices only.
                               - <b> SL_WLAN_GENERAL_PARAM_OPT_SCAN_PARAMS </b> \n
                                       Get scan parameters.
                                       This option uses SlWlanScanParamCommand_t as parameter
@@ -2354,7 +2363,9 @@ _i16 sl_WlanSet(const _u16 ConfigId ,const _u16 ConfigOpt,const _u16 ConfigLen,c
                               - <b>SL_WLAN_GENERAL_PARAM_OPT_USER_COUNTRY_ATTRIB</b>
                                       Get user user country attributes
                               - <b>SL_WLAN_GENERAL_PARAM_OPT_COUNTRY_ATTRIB</b>
-                                      Get current country attributes (No way to set country attributes, See also country list in Appendix C)                                 
+                                      Get current country attributes (No way to set country attributes, See also country list in Appendix C)
+                              - <b>SL_WLAN_GENERAL_PARAM_EXT_CONNECTION_INFO</b>
+                                      Get Beacon Interval and DTIM Period.
                           - <b>SL_WLAN_CFG_P2P_PARAM_ID</b>
                               - <b>SL_WLAN_P2P_OPT_CHANNEL_N_REGS</b> \n
                                      Get P2P Channels. \n
@@ -2591,7 +2602,7 @@ _i16 sl_WlanSet(const _u16 ConfigId ,const _u16 ConfigOpt,const _u16 ConfigLen,c
         _i16 RetVal = 0 ;
         _u16 Len = sizeof(SlWlanConnStatusParam_t) ;
         SlWlanConnStatusParam_t WlanConnectInfo ;
-        RetVal = sl_WlanGet(SL_WLAN_CONNECTION_INFO, NULL , &Len, (_u8*)&WlanConnectInfo);
+        RetVal = sl_WlanGet(SL_WLAN_CONNECTION_INFO, NULL, &Len, (_u8* )&WlanConnectInfo);
    \endcode
     <br>
 
@@ -2601,10 +2612,18 @@ _i16 sl_WlanSet(const _u16 ConfigId ,const _u16 ConfigOpt,const _u16 ConfigLen,c
          _u16  config_opt = SL_WLAN_GENERAL_PARAM_ANT_SELECTION_GET;
          _u16 len = sizeof(SetAntennaIndex_t);
          SetAntennaIndex_t SetAntennaParams; 
-         RetVal = sl_WlanGet(SL_WLAN_CFG_GENERAL_PARAM_ID,&config_opt,&len, (_u8* )&SetAntennaParams);
+         RetVal = sl_WlanGet(SL_WLAN_CFG_GENERAL_PARAM_ID, &config_opt, &len, (_u8* )&SetAntennaParams);
       \endcode
       <br>
-
+    - SL_WLAN_GENERAL_PARAM_EXT_CONNECTION_INFO:
+     \code
+         int8_t ret = 0;
+         SlWlanExtConnectionInfo_t ExtConnectionInfo;
+         _u16   config_opt = SL_WLAN_GENERAL_PARAM_EXT_CONNECTION_INFO;
+         _u16   Len = sizeof(SlWlanExtConnectionInfo_t);
+         ret =  sl_WlanGet(SL_WLAN_CFG_GENERAL_PARAM_ID, &config_opt, &Len, (_u8* )&ExtConnectionInfo);
+      \endcode
+      <br>
 */
 
 #if _SL_INCLUDE_FUNC(sl_WlanGet)

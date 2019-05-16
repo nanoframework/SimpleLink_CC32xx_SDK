@@ -748,6 +748,15 @@ extern "C" {
 /* SPI/UART interface closed */
 #define SL_RET_CODE_INTERFACE_CLOSED                                    (-2021L)
 
+/* In case of RX start was called and device statistics is already running.
+ * RX and device statistics cannot run in parallel*/
+#define SL_RET_CODE_DEVICE_STAT_IN_PROGRESS                             (-2022L)
+#define SL_RET_CODE_WLAN_RX_STAT_IN_PROGRESS                            (-2023L)
+
+/* In case of StartTLS API was called already on the same socket and it's
+ * still in progress */
+#define SL_RET_CODE_STARTTLS_IN_PROGRESS_ON_THIS_SD                     (-2024L)
+
 #ifdef  __cplusplus
 }
 #endif /*  __cplusplus */

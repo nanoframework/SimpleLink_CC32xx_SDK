@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@
  *
  *  @addtogroup ti_net_mqtt_MQTTClient MQTT Client
  *
- *  @brief      The SimpleLink MQTTClient Module provides an easy-to-use
+ *  @brief      The MQTTClient Module provides an easy-to-use
  *              API to enable constrained and deeply embedded
  *              micro-controller based products to interact with cloud or
  *              network based MQTT servers. The users of MQTTClient services,
@@ -45,22 +45,22 @@
 
  * \section descrypt_sec Description
 
- The SL MQTT Client Layer, in addition to providing services to the application,
+ In addition to providing services to the application, each MQTTClient instance
  encompasses a RTOS task to handle the incoming messages from the server. Such
  a dedicated context to process the messages from the server facilitates the
  apps to receive data (i.e. PUBLISH messages) even when they are blocked, whilst
  awaiting ACK for a previous transaction with the server. The receive task in
- the SL MQTT Layer can not be disabled anytime, however its system wide priority
+ the MQTT Layer can not be disabled anytime, however its system wide priority
  is configurable and can be set.
 
- Some of the salient features of the SL MQTT Layer are
+ Some of the salient features of the MQTTClient Layer are
 
  - Easy-to-use, intuitive and small set of MQTT API
  - App can indicate its choice to await ACK for a message transaction
  - Supports MQTT 3.1 protocol
 
  * \section config_sec Configuration
- The SL implementation enables the application developers to configure the
+ The implementation enables the application developers to configure the
  following parameters using the compile line flags (-D option)
  * - <b> CFG_SL_CL_MAX_MQP: </b> the count of TX + RX resources in the buffer pool
  for the library to use. \n\n
@@ -141,7 +141,6 @@ extern "C" {
 #define MQTTCLIENT_NETCONN_SKIP_DOMAIN_NAME_VERIFICATION         MQTT_DEV_NETCONN_OPT_SKIP_DOMAIN_NAME_VERIFICATION          /**< Assert to skip domain name verification         */
 #define MQTTCLIENT_NETCONN_SKIP_CERTIFICATE_CATALOG_VERIFICATION MQTT_DEV_NETCONN_OPT_SKIP_CERTIFICATE_CATALOG_VERIFICATION  /**< Assert to skip certificate catalog verification */
 #define MQTTCLIENT_NETCONN_SKIP_DATE_VERIFICATION                MQTT_DEV_NETCONN_OPT_SKIP_DATE_VERIFICATION                 /**< Assert to skip date verification                */
-	 /** @} */
 
 //*****************************************************************************
 // typedefs
@@ -227,7 +226,7 @@ typedef struct MQTTClient_Params
     bool mqttMode31;
 
     bool blockingSend;
-    MQTTClient_ConnParams *connParams; // pointer to connection param
+    MQTTClient_ConnParams *connParams; /**< pointer to connection params */
 
 } MQTTClient_Params;
 
@@ -263,70 +262,74 @@ typedef struct MQTTClient_Will
 //*****************************************************************************
 
 /**
- Creates the SL MQTT Implementation.
- A caller must call this function in order the create and initialize
- the MQTT implementation prior to using its services.
+ \brief  Create an MQTTClient instance
 
  \param[in] defaultCallback async event handler
  \param[in] params          parameters
 
  \return Success Handle or Failure NULL
+
+ \sa MQTTClient_delete()
  */
 MQTTClient_Handle MQTTClient_create(MQTTClient_CallBack defaultCallback,
         MQTTClient_Params *params);
 
 /**
- This function deletes an MQTT Client instance.
- It closes the connection if it exists and releases all resources.
+ \brief   Delete an MQTTClient instance.
 
- \param[in]  handle to the client context
+ \param[in] handle         handle to the MQTTClient instance
+
+ \remark    If the MQTTClient instance has an existing connection, it is
+            dropped.
 
  \return Success (0) or Failure (-1)
+
+ \sa MQTTClient_create()
  */
 int16_t MQTTClient_delete(MQTTClient_Handle handle);
 
 /**
- MQTT client state machine
+ \brief     MQTTClient state machine
+
  This function need to be called from the context
  created by the user in case of OS environment.
 
- \param[in]  handle to the client context
+ \param[in] handle         handle to the MQTTClient instance
 
  \return Success (0) or Failure (Negative number)
  */
 int16_t MQTTClient_run(MQTTClient_Handle handle);
 
 /**
- Function connects MQTT client to a broker
+ \brief     Connect to a broker
 
- \param[in]  handle to the client context
+ \param[in] handle         handle to the MQTTClient instance
 
  \return Success (0) or Failure (Negative number)
  */
 int16_t MQTTClient_connect(MQTTClient_Handle handle);
 
 /**
- DISCONNECT from the server.
- The caller must use this service to close the connection with the
- server.
+ \brief     Disconnect from a broker
 
- \param[in]  handle to the client context
+ \param[in] handle         handle to the MQTTClient instance
 
  \return Success (0) or Failure (Negative number)
  */
 int16_t MQTTClient_disconnect(MQTTClient_Handle handle);
 
 /**
- PUBLISH a named message to the server.
+ \brief     Publish a named message to the broker
+
  In addition to the PUBLISH specific parameters, the caller can indicate
  whether the routine should block until the time, the message has been
  acknowledged by the server. This is applicable only for non-QoS0 messages.
 
  In case, the app has chosen not to await for the ACK from the server,
- the SL MQTT implementation will notify the app about the subscription
+ the MQTT implementation will notify the app about the subscription
  through the callback routine.
 
- \param[in] handle refers to the handle to the client context
+ \param[in] handle         handle to the MQTTClient instance
  \param[in] topic  topic of the data to be published. It is NULL terminated.
  \param[in] topicLen  topic length.
  \param[in] msg   binary data to be published
@@ -339,17 +342,18 @@ int16_t MQTTClient_disconnect(MQTTClient_Handle handle);
 int16_t MQTTClient_publish(MQTTClient_Handle handle, char *topic, uint16_t topicLen, char *msg, uint16_t msgLen, uint32_t flags);
 
 /**
- SUBSCRIBE a set of topics.
+ \brief     Subscribe to a set of topics
+
  To receive data about a set of topics from the server, the app through
  this routine must subscribe to those topic names with the server. The
  caller can indicate whether the routine should block until a time, the
  message has been acknowledged by the server.
 
  In case, the app has chosen not to await for the ACK from the server,
- the SL MQTT implementation will notify the app about the subscription
+ the MQTT implementation will notify the app about the subscription
  through the callback routine.
 
- \param[in] handle         refers to the handle to the client context
+ \param[in] handle         handle to the MQTTClient instance
  \param[in] value          a pointer to a struct of subscribe parameters which hold: \n
                            Topic name to subscribe. It is a pointer to NULL terminated strings. \n
                            Qos value for the topic. \n
@@ -362,11 +366,12 @@ int16_t MQTTClient_publish(MQTTClient_Handle handle, char *topic, uint16_t topic
 int16_t MQTTClient_subscribe(MQTTClient_Handle handle, MQTTClient_SubscribeParams *value, uint8_t numberOfTopics);
 
 /**
- UNSUBSCRIBE a set of topics.
+ \brief     Unsubscribe from a set of topics
+
  The app should use this service to stop receiving data for the named
  topics from the server.
 
- \param[in] handle         refers to the handle to the client context
+ \param[in] handle         handle to the MQTTClient instance
  \param[in] value          topics set of topics to be unsubscribed. It is an array of
                            pointers to NULL terminated strings.
  \param[in] numberOfTopics count number of topics to be unsubscribed
@@ -376,12 +381,13 @@ int16_t MQTTClient_subscribe(MQTTClient_Handle handle, MQTTClient_SubscribeParam
 int16_t MQTTClient_unsubscribe(MQTTClient_Handle handle, MQTTClient_UnsubscribeParams *value, uint8_t numberOfTopics);
 
 /**
- Setting client parameters.
+ \brief     Set client parameters
+
  This function can set different parameters to the client.
  Will message params, user name and password, keep alive time and
  clean/persistent session.
 
- \param[in] handle      refers to the handle to the client context
+ \param[in] handle      handle to the MQTTClient instance
  \param[in] option      Define the actual option to set. Applicable values:
                            - #MQTTClient_USER_NAME
                            - #MQTTClient_PASSWORD
@@ -398,12 +404,13 @@ int16_t MQTTClient_unsubscribe(MQTTClient_Handle handle, MQTTClient_UnsubscribeP
 int16_t MQTTClient_set(MQTTClient_Handle handle, uint16_t option, void *value, uint16_t valueLength);
 
 /**
- Getting client parameters.
+ \brief     Get client parameters.
+
  This function can get different parameters from the client.
  Will message params, user name and password, keep alive time and
  clean/persistent session.
 
- \param[in] handle      refers to the handle to the client context
+ \param[in] handle      handle to the MQTTClient instance
  \param[in] option      Define the actual option to set. Applicable values:
                            - #MQTTClient_USER_NAME
                            - #MQTTClient_PASSWORD

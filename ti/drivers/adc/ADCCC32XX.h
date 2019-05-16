@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, Texas Instruments Incorporated
+ * Copyright (c) 2016-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,22 +29,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/** ============================================================================
+/*!****************************************************************************
  *  @file       ADCCC32XX.h
- *
  *  @brief      ADC driver implementation for the ADC peripheral on CC32XX
  *
  *  This ADC driver implementation is designed to operate on a CC32XX ADC
- *  peripheral.  The ADCCC32XX header file should be included in an application
- *  as follows:
- *  @code
- *  #include <ti/drivers/ADC.h>
- *  #include <ti/drivers/ADCCC32XX.h>
- *  @endcode
+ *  peripheral.
  *
  *  Refer to @ref ADC.h for a complete description of APIs & example of use.
  *
- *  ============================================================================
+ ******************************************************************************
  */
 #ifndef ti_drivers_adc_ADCMSP432__include
 #define ti_drivers_adc_ADCMSP432__include

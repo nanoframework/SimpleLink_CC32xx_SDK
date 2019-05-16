@@ -41,6 +41,7 @@
 #include <ti/drivers/net/wifi/simplelink.h>
 #include <ti/drivers/net/wifi/source/protocol.h>
 #include <ti/drivers/net/wifi/source/driver.h>
+#include <ti/drivers/net/wifi/eventreg.h>
 
 static void     _SlSocketBuildAddress(const SlSockAddr_t *addr, SlSocketAddrCommand_u    *pCmd);
 _SlReturnVal_t  _SlSocketHandleAsync_Connect(void *pVoidBuf);
@@ -1936,11 +1937,24 @@ _i16 sl_StartTLS(_i16 sd)
     SlSocketAsyncEvent_t AsyncRsp;
     _u32                 tempValue;
     _i16 ObjIdx = MAX_CONCURRENT_ACTIONS;
+    _i8 ret;
+    SlEventsListNode_t startTLS;
+    _u8 ActionIndex;
 
     /* verify that this api is allowed. if not allowed then
        ignore the API execution and return immediately with an error */
     VERIFY_API_ALLOWED(SL_OPCODE_SILO_SOCKET);
     _SlDrvMemZero(&AsyncRsp, sizeof(SlSocketAsyncEvent_t));
+
+    /* Check if there already Object with ActionID "startTLS" on the same socket */
+    for (ActionIndex = 0; ActionIndex < MAX_CONCURRENT_ACTIONS; ++ActionIndex)
+    {
+        if(((g_pCB->ObjPool[ActionIndex].AdditionalData & 0x0F) == sd) && ((g_pCB->ObjPool[ActionIndex].ActionID) == START_TLS_ID))
+        {
+            return SL_RET_CODE_STARTTLS_IN_PROGRESS_ON_THIS_SD;
+        }
+
+    }
 
     ObjIdx = _SlDrvProtectAsyncRespSetting((_u8*)&AsyncRsp, START_TLS_ID, (_u8)(sd  & SL_BSD_SOCKET_ID_MASK));
 
@@ -1949,6 +1963,9 @@ _i16 sl_StartTLS(_i16 sd)
         return SL_POOL_IS_EMPTY;
     }
 
+    startTLS.event = (void *)_SlSocketHandleAsync_StartTLS;
+    sl_RegisterLibsEventHandler(SL_EVENT_HDL_SOCKET, &startTLS);
+
     /* send Start TLS to sl_SetSockOpt */
     RetVal = sl_SetSockOpt(sd, SL_SOL_SOCKET, SL_SO_STARTTLS, &tempValue, sizeof(tempValue));
 
@@ -1956,23 +1973,15 @@ _i16 sl_StartTLS(_i16 sd)
     {
         /* wait for async and get Data Read parameters */
         VERIFY_RET_OK(_SlDrvWaitForInternalAsyncEvent(ObjIdx,0,0));
-
         VERIFY_PROTOCOL(AsyncRsp.Sd == (_u8)sd);
 
-        /* Some of the errors retrieved from the NWP are treated as warnings,
-           that means that although the type is ssl notification connected secured there
-           can be a warning behind it, so we need to check the value as well and
-           retrieve it to the host */
-        if ( (SL_SSL_NOTIFICATION_CONNECTED_SECURED == AsyncRsp.Type) && (AsyncRsp.Val >= 0) )
-        {
-            RetVal = SL_RET_CODE_OK;
-        }
-        else
-        {
-            RetVal = AsyncRsp.Val;
-        }
+        RetVal = AsyncRsp.Val;
     }
-
+    ret = sl_UnregisterLibsEventHandler(SL_EVENT_HDL_SOCKET, &startTLS);
+    if(ret < 0)
+    {
+        return ret;
+    }
     _SlDrvReleasePoolObj(ObjIdx);
     return RetVal;
 }
@@ -1982,20 +1991,44 @@ _i16 sl_StartTLS(_i16 sd)
 /*******************************************************************************/
 _SlReturnVal_t _SlSocketHandleAsync_StartTLS(void *pVoidBuf)
 {
+    _u8 ActionIndex;
+
     SlSocketAsyncEvent_t *pMsgArgs = (SlSocketAsyncEvent_t *)((_u32)pVoidBuf+sizeof(_u32));
 
     SL_DRV_PROTECTION_OBJ_LOCK_FOREVER();
 
     VERIFY_PROTOCOL((pMsgArgs->Sd & SL_BSD_SOCKET_ID_MASK) <= SL_MAX_SOCKETS);
-    VERIFY_SOCKET_CB(NULL != g_pCB->ObjPool[g_pCB->FunctionParams.AsyncExt.ActionIndex].pRespArgs);
 
-    ((SlSocketAsyncEvent_t *)(g_pCB->ObjPool[g_pCB->FunctionParams.AsyncExt.ActionIndex].pRespArgs))->Sd = pMsgArgs->Sd;
-    ((SlSocketAsyncEvent_t *)(g_pCB->ObjPool[g_pCB->FunctionParams.AsyncExt.ActionIndex].pRespArgs))->Type = pMsgArgs->Type;
-    ((SlSocketAsyncEvent_t *)(g_pCB->ObjPool[g_pCB->FunctionParams.AsyncExt.ActionIndex].pRespArgs))->Val = pMsgArgs->Val;
+    /* Match the action index*/
+    for (ActionIndex = 0; ActionIndex < MAX_CONCURRENT_ACTIONS; ++ActionIndex)
+    {
+        if((g_pCB->ObjPool[ActionIndex].AdditionalData & 0x0F) == pMsgArgs->Sd && ((g_pCB->ObjPool[ActionIndex].ActionID) == START_TLS_ID))
+        {
+            break;
+        }
+    }
 
-    SL_DRV_SYNC_OBJ_SIGNAL(&g_pCB->ObjPool[g_pCB->FunctionParams.AsyncExt.ActionIndex].SyncObj);
+    if(ActionIndex == MAX_CONCURRENT_ACTIONS)
+    {
+       return EVENT_PROPAGATION_CONTINUE;
+    }
+
+    VERIFY_SOCKET_CB(NULL != g_pCB->ObjPool[ActionIndex].pRespArgs);
+
+    ((SlSocketAsyncEvent_t *)(g_pCB->ObjPool[ActionIndex].pRespArgs))->Sd = pMsgArgs->Sd;
+    ((SlSocketAsyncEvent_t *)(g_pCB->ObjPool[ActionIndex].pRespArgs))->Type = pMsgArgs->Type;
+    ((SlSocketAsyncEvent_t *)(g_pCB->ObjPool[ActionIndex].pRespArgs))->Val = pMsgArgs->Val;
+
+
     SL_DRV_PROTECTION_OBJ_UNLOCK();
-
-    return SL_OS_RET_CODE_OK;
+    if ((SL_SSL_NOTIFICATION_HANDSHAKE_FAILED == pMsgArgs->Type || SL_SSL_NOTIFICATION_CONNECTED_SECURED == pMsgArgs->Type))
+    {
+        SL_DRV_SYNC_OBJ_SIGNAL(&g_pCB->ObjPool[ActionIndex].SyncObj);
+        return EVENT_PROPAGATION_BLOCK;
+    }
+    else
+    {
+        return EVENT_PROPAGATION_CONTINUE;
+    }
 }
 #endif

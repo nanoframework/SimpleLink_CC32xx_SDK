@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, Texas Instruments Incorporated
+ * Copyright (c) 2016-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,9 +30,8 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** ============================================================================
+/*!***************************************************************************
  *  @file       SDHostCC32XX.h
- *
  *  @brief      SDHost driver implementation for CC32XX devices.
  *
  *  The SDHost header file should be included in an application as follows:
@@ -67,7 +66,7 @@
  *  When DMA is used, it is the responsibility of the application to ensure
  *  that read/write buffers reside in memory that is accessible by the DMA.
  *
- *  ============================================================================
+ *  <hr>
  */
 
 #ifndef ti_drivers_sd_SDHostCC32XX__include
@@ -164,24 +163,20 @@ typedef struct SDHostCC32XX_HWAttrsV1 {
  */
 typedef struct SDHostCC32XX_Object {
     /* Relative Card Address */
-    uint_fast32_t              rca;
-    /* Write data pointer */
-    const uint_fast32_t       *writeBuf;
+    volatile uint32_t     rca;
     /* Number of sectors written */
-    volatile uint_fast32_t     writeSecCount;
+    volatile uint32_t     sectorCount;
     /* Read data pointer */
-    uint_fast32_t             *readBuf;
-    /* Number of sectors read */
-    volatile uint_fast32_t     readSecCount;
+    volatile uint32_t     *buffer;
     /*
      *  Semaphore to suspend thread execution when waiting for SD Commands
      *  or data transfers to complete.
      */
     SemaphoreP_Handle      cmdSem;
-    /*
-     *  SD Card interrupt handle.
-     */
+    /* SD Card interrupt handle. */
     HwiP_Handle            hwiHandle;
+    /* UDMA Handle */
+    UDMACC32XX_Handle      dmaHandle;
     /* Determined from base address */
     unsigned int           powerMgrId;
     /* LPDS wake-up notify object */
@@ -190,13 +185,15 @@ typedef struct SDHostCC32XX_Object {
     PowerCC32XX_ParkState  prevParkCLK;
     /* SDCARD_CLK pin */
     uint16_t               clkPin;
-    /* UDMA Handle */
-    UDMACC32XX_Handle      dmaHandle;
     /* SD Card command state */
     volatile int_fast8_t   stat;
     /* State of the driver (open or closed) */
     bool                   isOpen;
-    /* SDCard Card Command Class(CCC) */
+    /* Indicates if a DMA transfer is in a ping or pong state */
+    bool                    ping;
+    /* Indicates if a semaphore has been posted for a DMA event */
+    bool                    dmaPosted;
+    /* SDCard Card Command Class (CCC) */
     SD_CardType            cardType;
 } SDHostCC32XX_Object;
 
