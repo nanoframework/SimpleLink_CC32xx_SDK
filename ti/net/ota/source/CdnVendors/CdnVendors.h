@@ -48,7 +48,6 @@ extern "C" {
 #define CdnVendor_ParseRespDir          CdnGithub_ParseRespDir
 #define CdnVendor_SendReqFileUrl        CdnGithub_SendReqFileUrl
 #define CdnVendor_ParseRespFileUrl      CdnGithub_ParseRespFileUrl
-#define CdnVendor_SendReqFileContent    CdnGithub_SendReqFileContent
 
 #elif OTA_SERVER_TYPE == OTA_SERVER_DROPBOX_V2
 
@@ -58,7 +57,6 @@ extern "C" {
 #define CdnVendor_ParseRespDir          CdnDropboxV2_ParseRespDir
 #define CdnVendor_SendReqFileUrl        CdnDropboxV2_SendReqFileUrl
 #define CdnVendor_ParseRespFileUrl      CdnDropboxV2_ParseRespFileUrl
-#define CdnVendor_SendReqFileContent    CdnDropboxV2_SendReqFileContent
 
 #endif
 

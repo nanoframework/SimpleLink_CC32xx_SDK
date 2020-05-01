@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -107,6 +107,8 @@ extern "C" {
 #define SLNETERR_BSD_EHOSTDOWN                                          (-112L)  /**< Host is down                                                            */
 #define SLNETERR_BSD_EHOSTUNREACH                                       (-113L)  /**< No route to host                                                        */
 #define SLNETERR_BSD_EALREADY                                           (-114L)  /**< Non blocking connect in progress, try again                             */
+#define SLNETERR_BSD_EDOM                                               (-115L)  /**< Mathematics argument out of domain of function.                         */
+#define SLNETERR_BSD_ENOSPC                                             (-116L)  /**< No space left on device.                                                */
 
 /* ssl tls security start with -300 offset */
 #define SLNETERR_ESEC_CLOSE_NOTIFY                                      (-300L)  /**< ssl/tls alerts */
@@ -139,7 +141,7 @@ extern "C" {
 /* proprietary secure */
 #define SLNETERR_ESEC_GENERAL                                           (-450L)  /**< error secure level general error                                               */
 #define SLNETERR_ESEC_DECRYPT                                           (-451L)  /**< error secure level, decrypt recv packet fail                                   */
-#define SLNETERR_ESEC_CLOSED                                            (-452L)  /**< secure layer is closed by other size, tcp is still connected                   */
+#define SLNETERR_ESEC_CLOSED                                            (-452L)  /**< secure layer is closed by other side, tcp is still connected                   */
 #define SLNETERR_ESEC_SNO_VERIFY                                        (-453L)  /**< Connected without server verification                                          */
 #define SLNETERR_ESEC_NO_CA_FILE                                        (-454L)  /**< error secure level CA file not found                                           */
 #define SLNETERR_ESEC_MEMORY                                            (-455L)  /**< error secure level No memory  space available                                  */
@@ -154,7 +156,7 @@ extern "C" {
 #define SLNETERR_ESEC_RX_BUFFER_NOT_EMPTY                               (-464L)  /**< cannot start ssl connection while recv buffer is full                          */
 #define SLNETERR_ESEC_SSL_DURING_HAND_SHAKE                             (-465L)  /**< cannot use while in handshaking                                                */
 #define SLNETERR_ESEC_NOT_ALLOWED_WHEN_LISTENING                        (-466L)  /**< the operation is not allowed when listening, do before listen                  */
-#define SLNETERR_ESEC_CERTIFICATE_REVOKED                               (-467L)  /**< connected but on of the certificates in the chain is revoked                   */
+#define SLNETERR_ESEC_CERTIFICATE_REVOKED                               (-467L)  /**< connected but one of the certificates in the chain is revoked                  */
 #define SLNETERR_ESEC_UNKNOWN_ROOT_CA                                   (-468L)  /**< connected but the root CA used to validate the peer is unknown                 */
 #define SLNETERR_ESEC_WRONG_PEER_CERT                                   (-469L)  /**< wrong peer cert (server cert) was received while trying to connect to server   */
 #define SLNETERR_ESEC_TCP_DISCONNECTED_UNCOMPLETE_RECORD                (-470L)  /**< the other side disconnected the TCP layer and didn't send the whole ssl record */

@@ -77,7 +77,7 @@
 static int32_t SlNetUtil_UTOA(uint16_t value, char * string, uint16_t base);
 static int32_t SlNetUtil_bin2StrIpV4(SlNetSock_InAddr_t *binaryAddr, char *strAddr, uint16_t strAddrLen);
 static int32_t SlNetUtil_bin2StrIpV6(SlNetSock_In6Addr_t *binaryAddr, char *strAddr, uint16_t strAddrLen);
-static int32_t SlNetUtil_strTok(char **string, char *returnstring, const char *delimiter);
+static int32_t SlNetUtil_strTok(char **string, char *returnstring, int retstringlength, const char *delimiter);
 static int32_t SlNetUtil_str2BinIpV4(char *strAddr, SlNetSock_InAddr_t *binaryAddr);
 static int32_t SlNetUtil_str2BinIpV6(char *strAddr, SlNetSock_In6Addr_t *binaryAddr);
 
@@ -198,6 +198,17 @@ int32_t SlNetUtil_getHostByName(uint32_t ifBitmap, char *name, const uint16_t na
         {
             /* Disable the ifID bit from the ifBitmap after finding the netIf*/
             ifBitmap &= ~(netIf->ifID);
+
+            /* Use SlNetUtil_inetPton to test if name is already an IP address.
+               If so, point ipAddr to the binary value of the IP and return  */
+            if (SlNetUtil_inetPton(family, name, ipAddr)) {
+                /* Convert ipAddr to host byte order as getHostByName requires
+                   ipAddr to be in host byte order */
+                *ipAddr = SlNetUtil_ntohl(*ipAddr);
+
+                *ipAddrLen = 1;
+                return netIf->ifID;
+            }
 
             /* Interface exists, return interface IP address                 */
             retVal = (netIf->ifConf)->utilGetHostByName(netIf->ifContext, name, nameLen, ipAddr, ipAddrLen, family);
@@ -1118,22 +1129,32 @@ const char *SlNetUtil_inetNtop(int16_t addrFamily, const void *binaryAddr, char 
 
 //*****************************************************************************
 //
-// SlNetUtil_strTok - Split a string up into tokens
+// SlNetUtil_strTok - Split a valid ipv4 string up into tokens
 //
 //*****************************************************************************
-static int32_t SlNetUtil_strTok(char **string, char *returnstring, const char *delimiter)
+static int32_t SlNetUtil_strTok(char **string, char *returnstring, int retstringlength, const char *delimiter)
 {
     char * retStr;
+    int count = 0;
 
     retStr = returnstring;
 
-    while ( (**string !='\0') && (**string != *delimiter) )
+    while ( (**string !='\0') && (**string != *delimiter) &&
+           (count != (retstringlength-1)))
     {
         *retStr = **string;
         retStr++;
         (*string)++;
+        count++;
     }
-    if (**string !='\0')
+    /* string portion has to either end with delimiter or null char to be an
+       ipv4 string                                                           */
+    if (**string !='\0' && **string != *delimiter)
+    {
+        return SLNETERR_RET_CODE_INVALID_INPUT;
+    }
+    /* skip delimiter chars                                                  */
+    if (**string == *delimiter)
     {
         (*string)++;
     }
@@ -1152,13 +1173,14 @@ static int32_t SlNetUtil_str2BinIpV4(char *strAddr, SlNetSock_InAddr_t *binaryAd
 {
     uint32_t  decNumber;
     char      token[4];
+    char     *end;
     int32_t   retVal;
     int32_t   ipOctet     = 0;
     uint32_t  ipv4Address = 0;
     char     *modifiedStr = strAddr;
 
     /* split strAddr into tokens separated by "."                            */
-    retVal = SlNetUtil_strTok(&modifiedStr, token, ".");
+    retVal = SlNetUtil_strTok(&modifiedStr, token, 4, ".");
     if (SLNETERR_RET_CODE_OK != retVal)
     {
         return retVal;
@@ -1167,27 +1189,22 @@ static int32_t SlNetUtil_str2BinIpV4(char *strAddr, SlNetSock_InAddr_t *binaryAd
     /* run 4 times as IPv4 contain of four octets and separated by periods   */
     while(ipOctet < 4)
     {
-        /* Check Whether IP is valid */
-        if(token != NULL)
+        /* Parses the token strAddr, interpreting its content as an integral
+           number of the specified base 10                               */
+        decNumber = (int)strtoul(token, &end, 10);
+
+        /* Check if the octet holds valid number between the range 0-255.
+           end points the end of the numeric portion of the input string
+           for strtoul, so if end == token that means no conversion has
+           occured as there was no numeric portion detected              */
+        if (decNumber < 256 && end != token)
         {
-            /* Parses the token strAddr, interpreting its content as an integral
-               number of the specified base 10                               */
-            decNumber = (int)strtoul(token, 0, 10);
+            /* manually place each byte in network order */
+            ((int8_t *)&ipv4Address)[ipOctet] = (uint8_t)decNumber;
 
-            /* Check if the octet holds valid number between the range 0-255 */
-            if (decNumber < 256)
-            {
-                /* manually place each byte in network order */
-                ((int8_t *)&ipv4Address)[ipOctet] = (uint8_t)decNumber;
-
-                /* split strAddr into tokens separated by "."                */
-                SlNetUtil_strTok(&modifiedStr, token, ".");
-                ipOctet++;
-            }
-            else
-            {
-                return SLNETERR_RET_CODE_INVALID_INPUT;
-            }
+            /* split strAddr into tokens separated by "."                */
+            SlNetUtil_strTok(&modifiedStr, token, 4, ".");
+            ipOctet++;
         }
         else
         {
@@ -1297,6 +1314,12 @@ static int32_t SlNetUtil_str2BinIpV6(char *strAddr, SlNetSock_In6Addr_t *binaryA
                     return SLNETERR_RET_CODE_INVALID_INPUT;
                 }
             }
+        }
+        /* None of the valid characters have matched so this is not an ipv6
+           address                                                           */
+        else
+        {
+            return SLNETERR_RET_CODE_INVALID_INPUT;
         }
         /* Continue to the next ASCII character                              */
         pLocalStr++;
@@ -1495,7 +1518,7 @@ int32_t SlNetUtil_inetPton(int16_t addrFamily, const char *strAddr, void *binary
 
         default:
             /* wrong address family - function error, return -1 error        */
-            return SLNETERR_RET_CODE_INVALID_INPUT;
+            return -1;
     }
 
     /* Check if conversion was successful                                    */

@@ -106,6 +106,11 @@ int16_t OTA_set(OTA_option option, int32_t optionLen, uint8_t *pOptionVal, int32
             memcpy(&pOtaLib->OtaServerInfo, pOptionVal, sizeof(Ota_optServerInfo));
             break;
 
+        case EXTLIB_OTA_SET_OPT_FILE_SERVER_URL:
+             strcpy((char *)pOtaLib->FileUrlBuf, (char *)pOptionVal);
+             pOtaLib->OtaServerInfo.SecuredConnection = OTA_SERVER_SECURED;
+             break;
+
         case EXTLIB_OTA_SET_OPT_VENDOR_ID:
             if (strlen((const char *)pOptionVal) >= MAX_VENDIR_DIR_SIZE)
             {
@@ -244,23 +249,30 @@ int16_t _OtaCheckConsecutiveErrors(OtaLib_t *pOtaLib, int16_t OtaStatus, int32_t
 int16_t OTA_run()
 {
     CdnClient_t *pCdnClient = (CdnClient_t *)&pOtaLib->CdnClient;
-    int32_t NumDirFiles;
     int16_t Status;
     int16_t ProcessedBytes;
-    uint8_t *pVersionFileName;
 
     switch (pOtaLib->State)
     {
         case OTA_STATE_IDLE:
+#if OTA_SERVER_TYPE == OTA_FILE_DOWNLOAD
+            /* File Server URL must be initialized before running OTA */
+            if(pOtaLib->FileUrlBuf[0] == 0)
+            {
+                return OTA_RUN_ERROR_NO_SERVER_NO_VENDOR;
+            }
+            pOtaLib->State = OTA_STATE_CONNECT_FILE_SERVER;
+#else
             /* serverInfo and vendorDir must be init before running OTA */
-            if ((pOtaLib->OtaServerInfo.ServerName[0] == 0) /*|| (pOtaLib->VendorDir[0] == 0)*/)
+            if /*(*/(pOtaLib->OtaServerInfo.ServerName[0] == 0) /*|| (pOtaLib->VendorDir[0] == 0))*/
             {
                 return OTA_RUN_ERROR_NO_SERVER_NO_VENDOR;
             }
 
             pOtaLib->State = OTA_STATE_CONNECT_SERVER;
+#endif
             break;
-
+#if OTA_SERVER_TYPE != OTA_FILE_DOWNLOAD
         case OTA_STATE_CONNECT_SERVER:
             _SlOtaLibTrace(("OTA_run: call CdnClient_ConnectServer OTA server=%s\r\n", pOtaLib->OtaServerInfo.ServerName));
             Status = CdnClient_ConnectServer(pCdnClient, &pOtaLib->OtaServerInfo);
@@ -274,6 +286,8 @@ int16_t OTA_run()
             break;
 
         case OTA_STATE_REQ_OTA_DIR:
+        {
+            int32_t NumDirFiles;
             _SlOtaLibTrace(("OTA_run: CdnClient_ReqOtaDir, VendorDir=%s\r\n", pOtaLib->VendorDir));
             NumDirFiles = CdnClient_ReqOtaDir(pCdnClient, pOtaLib->VendorDir);
             if (NumDirFiles < 0)
@@ -292,10 +306,12 @@ int16_t OTA_run()
             }
             _SlOtaLibTrace(("OTA_run: CdnClient_ReqOtaDir, NumDirFiles=%ld\r\n", NumDirFiles));
             pOtaLib->State = OTA_STATE_CHECK_ARCHIVE_NEW_UPDATE;
-            break;
+        }
+        break;
 
         case OTA_STATE_CHECK_ARCHIVE_NEW_UPDATE:
-
+        {
+            uint8_t *pVersionFileName;
             _SlOtaLibTrace(("OTA_run: CdnClient_GetNextDirFile\r\n"));
             pOtaLib->pOtaFileName = CdnClient_GetNextDirFile(pCdnClient, &pOtaLib->OtaFileSize);
 
@@ -337,6 +353,7 @@ int16_t OTA_run()
             {
                 return OTA_RUN_STATUS_CHECK_OLDER_VERSION;
             }
+        }
 
         case OTA_STATE_REQ_FILE_URL:
 
@@ -354,7 +371,7 @@ int16_t OTA_run()
 
             pOtaLib->State = OTA_STATE_CONNECT_FILE_SERVER;
             break;
-
+#endif
         case OTA_STATE_CONNECT_FILE_SERVER:
 
             _SlOtaLibTrace(("OTA_run: Call CdnClient_ConnectFileServer, url = %s\r\n", pOtaLib->FileUrlBuf));

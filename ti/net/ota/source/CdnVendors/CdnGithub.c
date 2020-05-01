@@ -264,14 +264,5 @@ int16_t  CdnGithub_ParseRespFileUrl(uint16_t SockId, uint8_t *pSendBuf, uint8_t 
     return CDN_STATUS_OK;
 }
 
-/* GITHUB API - build get file content request, example
-    GET /CC3X20/SL_OTA/master/OTA_R2/20151217_1_28.tar HTTP/1.1
-    Host: raw.githubusercontent.com
-*/
-int16_t CdnGithub_SendReqFileContent(int16_t SockId, uint8_t *pSendBuf, uint8_t *pFileServerName, uint8_t *pFileName)
-{
-    _SlOtaLibTrace(("CdnGithub_SendReqFileContent: file=%s\r\n", pFileName));
-    return HttpClient_SendReq(SockId, pSendBuf, (uint8_t *)"GET ", pFileServerName, NULL, pFileName, NULL, NULL);
- }
 
 #endif /* #if OTA_SERVER_TYPE == OTA_SERVER_GITHUB */

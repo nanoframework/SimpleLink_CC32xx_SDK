@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -155,7 +155,7 @@ void DisplayHost_clearLines(Display_Handle handle, uint8_t fromLine,
  * @return      void
  */
 void DisplayHost_vprintf(Display_Handle handle, uint8_t line,
-                         uint8_t column, char *fmt, va_list va)
+                         uint8_t column, const char *fmt, va_list va)
 {
     DisplayHost_HWAttrs *hwAttrs = (DisplayHost_HWAttrs *)handle->hwAttrs;
     int     strSize;

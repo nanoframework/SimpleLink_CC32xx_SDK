@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -165,7 +165,7 @@ void Display_doClearLines(Display_Handle handle, uint8_t fromLine, uint8_t toLin
  *  ======== Display_doPrintf ========
  */
 void Display_doPrintf(Display_Handle handle, uint8_t line, uint8_t column,
-                      char *fmt, ...)
+                      const char *fmt, ...)
 {
     if (NULL == handle)
     {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,13 @@ extern "C" {
 /* must match type of _SlNetSock_Addr_t's sa_family field */
 typedef uint16_t sa_family_t;
 
+/* used for SO_LINGER option in set/getsockopt */
+typedef struct linger
+{
+    int l_onoff;           /**< 0 = disabled; 1 = enabled; default = 0; */
+    int l_linger;          /**< linger time in seconds; default = 0;    */
+} linger;
+
 #define sockaddr_storage SlNetSock_SockAddrStorage_t
 
 /* socket opts */
@@ -70,17 +77,20 @@ typedef uint16_t sa_family_t;
 #define SO_LINGER                           SLNETSOCK_OPSOCK_LINGER
 #define SO_RX_NO_IP_BOUNDARY                SLNETSOCK_OPSOCK_NON_IP_BOUNDARY
 #define SO_RCVTIMEO                         SLNETSOCK_OPSOCK_RCV_TIMEO
+#define SO_SNDTIMEO                         SLNETSOCK_OPSOCK_SND_TIMEO
 #define SO_RCVBUF                           SLNETSOCK_OPSOCK_RCV_BUF
+#define SO_SNDBUF                           SLNETSOCK_OPSOCK_SND_BUF
 #define SO_NONBLOCKING                      SLNETSOCK_OPSOCK_NON_BLOCKING
 #define SO_BROADCAST                        SLNETSOCK_OPSOCK_BROADCAST
+#define SO_REUSEADDR                        SLNETSOCK_OPSOCK_REUSEADDR
+#define SO_REUSEPORT                        SLNETSOCK_OPSOCK_REUSEPORT
+#define SO_ERROR                            SLNETSOCK_OPSOCK_ERROR
 #define MSG_OOB                             SLNETSOCK_MSG_OOB
 #define MSG_PEEK                            SLNETSOCK_MSG_PEEK
 #define MSG_WAITALL                         SLNETSOCK_MSG_WAITALL
 #define MSG_DONTWAIT                        SLNETSOCK_MSG_DONTWAIT
 #define MSG_DONTROUTE                       SLNETSOCK_MSG_DONTROUTE
 #define MSG_NOSIGNAL                        SLNETSOCK_MSG_NOSIGNAL
-#define SO_REUSEADDR                        (201)
-#define SO_SNDBUF                           (202)
 
 
 /* socket shutdown opts */

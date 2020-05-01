@@ -1,0 +1,18 @@
+package/lib/lib/ccs/m4/runtime_debug/Log.oem4: Log.c /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdbool.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdint.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdio.h ./Log.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_stdint40.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/stdint.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_ti_config.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdarg.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/cdefs.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_types.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/xlocale/_stdio.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_stdint.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_stdint.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/linkage.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_types.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_limits.h 
+Log.c:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdbool.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdint.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdio.h:
+./Log.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_stdint40.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/stdint.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_ti_config.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdarg.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/cdefs.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_types.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/xlocale/_stdio.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_stdint.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_stdint.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/linkage.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_types.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_limits.h:

@@ -749,6 +749,7 @@ int HTTPServer_serveSelect(HTTPServer_Handle srv, const struct sockaddr * addr,
 {
     int sc;
     Session * session;
+    Session * newSession;
     int status;
     fd_set fds;
     int maxs;
@@ -898,17 +899,21 @@ int HTTPServer_serveSelect(HTTPServer_Handle srv, const struct sockaddr * addr,
                 }
             }
             else {
-                addSession(srv, sc);
+                newSession = addSession(srv, sc);
 
-                if ((srv->secAttribs != NULL) && (srv->isSecure)) {
-                    /* Start the tls session between server and new client*/
-                    status = SlNetSock_startSec(sc, srv->secAttribs,
-                                SLNETSOCK_SEC_START_SECURITY_SESSION_ONLY);
-                    if (status < 0) {
-                        goto selectFail;
+                if (newSession) {
+                    if ((srv->secAttribs != NULL) && (srv->isSecure)) {
+                        /* Start the tls session between server and new client*/
+                        status = SlNetSock_startSec(sc, srv->secAttribs,
+                                    SLNETSOCK_SEC_START_SECURITY_SESSION_ONLY);
+                        if (status < 0) {
+                            removeSession(srv, newSession);
+                            pruneSession(srv);
+                        }
                     }
+                } else {
+                    closeSocket(sc);
                 }
-
             }
         }
 

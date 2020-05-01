@@ -72,7 +72,7 @@ extern OtaJson OtaJsonObj;
 int16_t  CdnDropboxV2_SendReqDir(int16_t SockId, uint8_t *pSendBuf, uint8_t *pServerName, uint8_t *pVendorDir, uint8_t *pVendorToken)
 {
     uint8_t ReqDirCmdBuf[200];
-
+    uint8_t pVendorDirUnderComment[] =  "";
     /* Headers */
     strcpy((char *)ReqDirCmdBuf, (const char *)pVendorToken);
     strcat((char *)ReqDirCmdBuf, "\r\nContent-Type: Application/Json\r\nContent-Length:  ");
@@ -85,7 +85,8 @@ int16_t  CdnDropboxV2_SendReqDir(int16_t SockId, uint8_t *pSendBuf, uint8_t *pSe
     strcat((char *)ReqDirCmdBuf, "\"}");
 
     _SlOtaLibTrace(("CdnDropbox_SendReqDir: uri=%s\r\n", OTA_SERVER_REST_REQ_DIR));
-    return HttpClient_SendReq (SockId, pSendBuf, (uint8_t *)"POST ", pServerName, (uint8_t *)OTA_SERVER_REST_REQ_DIR , ""/*pVendorDir*/, (uint8_t *)OTA_SERVER_REST_HDR, ReqDirCmdBuf/*pVendorToken*/);
+
+    return HttpClient_SendReq (SockId, pSendBuf, (uint8_t *)"POST ", pServerName, (uint8_t *)OTA_SERVER_REST_REQ_DIR , pVendorDirUnderComment/*pVendorDir*/, (uint8_t *)OTA_SERVER_REST_HDR, ReqDirCmdBuf/*pVendorToken*/);
 }
 
 /* DROPBOX API - parse metadata JSON response, example
@@ -305,6 +306,7 @@ int16_t  CdnDropboxV2_ParseRespDir(int16_t SockId, uint8_t *pRespBuf, OtaDirData
 int16_t  CdnDropboxV2_SendReqFileUrl(int16_t SockId, uint8_t *pSendBuf, uint8_t *pServerName, uint8_t *pFileName, uint8_t *pVendorToken)
 {
     uint8_t ReqDirCmdBuf[200];
+    uint8_t pFileNameUnderComment[] = "";
 
     /* Headers */
     strcpy((char *)ReqDirCmdBuf, (const char *)pVendorToken);
@@ -318,7 +320,7 @@ int16_t  CdnDropboxV2_SendReqFileUrl(int16_t SockId, uint8_t *pSendBuf, uint8_t 
     strcat((char *)ReqDirCmdBuf, "\"}");
 
     _SlOtaLibTrace(("CdnDropbox_SendReqFileUrl: uri=%s\r\n", OTA_SERVER_REST_REQ_FILE_URL));
-    return HttpClient_SendReq(SockId, pSendBuf, (uint8_t *)"POST ", pServerName, (uint8_t *)OTA_SERVER_REST_REQ_FILE_URL , "" /*pFileName*/, (uint8_t *)OTA_SERVER_REST_HDR, ReqDirCmdBuf/*pVendorToken*/);
+    return HttpClient_SendReq(SockId, pSendBuf, (uint8_t *)"POST ", pServerName, (uint8_t *)OTA_SERVER_REST_REQ_FILE_URL , pFileNameUnderComment /*pFileName*/, (uint8_t *)OTA_SERVER_REST_HDR, ReqDirCmdBuf/*pVendorToken*/);
 }
 
 /* DROPBOX API - parse media JSON response, example
@@ -403,14 +405,5 @@ int16_t CdnDropboxV2_ParseRespFileUrl(uint16_t SockId, uint8_t *pRespBuf, uint8_
     return CDN_STATUS_OK;
 }
 
-/* DROPBOX API - build get file request, example
-    GET /1/view/e2scsc5ku4hnjyi/Apps/SL_OTA/OTA_R2/20151217_2_00.tar HTTP/1.1
-    Host: dl.dropboxusercontent.com
-*/
-int16_t CdnDropboxV2_SendReqFileContent(int16_t SockId, uint8_t *pSendBuf, uint8_t *pFileServerName, uint8_t *pFileName)
-{
-    _SlOtaLibTrace(("CdnDropbox_SendReqFileContent: file=%s\r\n", pFileName));
-    return HttpClient_SendReq(SockId, pSendBuf, (uint8_t *)"GET ", pFileServerName, NULL, pFileName, NULL, NULL);
- }
 
 #endif /* #if OTA_SERVER_TYPE == OTA_SERVER_DROPBOX */

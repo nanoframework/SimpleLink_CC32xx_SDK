@@ -47,7 +47,7 @@
 #define MAX_URL_LENGTH              (500)
 /* Max length of the Metadata file size and name */
 #define MAX_METADATA_FILESIZE       (10)
-#define MAX_METADATA_FILENAME       (100)
+#define MAX_METADATA_FILENAME       (128)
 
 /****************************************************************************
                       GLOBAL VARIABLES

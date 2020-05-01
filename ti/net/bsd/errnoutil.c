@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -162,6 +162,26 @@ int ErrnoUtil_set(int32_t Errno)
 #if ECONNREFUSED != SLNETERR_BSD_ECONNREFUSED
     case SLNETERR_BSD_ECONNREFUSED:
         Errno = ECONNREFUSED;
+        break;
+#endif
+#if ENOTSOCK != SLNETERR_BSD_ENOTSOCK
+    case SLNETERR_BSD_ENOTSOCK:
+        Errno = ENOTSOCK;
+        break;
+#endif
+#if EDOM != SLNETERR_BSD_EDOM
+    case SLNETERR_BSD_EDOM:
+        Errno = EDOM;
+        break;
+#endif
+#if ENOSPC != SLNETERR_BSD_ENOSPC
+    case SLNETERR_BSD_ENOSPC:
+        Errno = ENOSPC;
+        break;
+#endif
+#if EALREADY != SLNETERR_BSD_EALREADY
+    case SLNETERR_BSD_EALREADY:
+        Errno = EALREADY;
         break;
 #endif
     /* The cases below are propriety driver errors, which can

@@ -696,8 +696,10 @@ _SlDrvDriverCBDeinit - De init Driver Control Block
 *****************************************************************************/
 _SlReturnVal_t _SlDrvDriverCBDeinit(void)
 {
+#ifdef SL_MEMORY_MGMT_DYNAMIC
     _SlSpawnMsgItem_t* pCurr;
     _SlSpawnMsgItem_t* pNext;
+#endif
 
     /* Flow control de-init */
     g_pCB->FlowContCB.TxPoolCnt = 0;
@@ -988,12 +990,13 @@ _SlReturnVal_t _SlDrvDataReadOp(
         if( g_pCB->SocketNonBlocking & (1<<(Sd & SL_BSD_SOCKET_ID_MASK) ))
         {
              _u16 opcodeAsyncEvent = (pCmdCtrl->Opcode ==  SL_OPCODE_SOCKET_RECV) ? SL_OPCODE_SOCKET_RECVASYNCRESPONSE : SL_OPCODE_SOCKET_RECVFROMASYNCRESPONSE; 
-             VERIFY_RET_OK(_SlDrvWaitForInternalAsyncEvent(ObjIdx, SL_DRIVER_TIMEOUT_SHORT, opcodeAsyncEvent));
+             RetVal = _SlDrvWaitForInternalAsyncEvent(ObjIdx, SL_DRIVER_TIMEOUT_SHORT, opcodeAsyncEvent);
+
         }
         else
         {
             /* Wait for response message. Will be signaled by _SlDrvMsgRead. */
-            VERIFY_RET_OK(_SlDrvWaitForInternalAsyncEvent(ObjIdx, 0, 0));
+            RetVal = _SlDrvWaitForInternalAsyncEvent(ObjIdx, 0, 0);
         }
           
     }
@@ -1253,7 +1256,7 @@ _SlReturnVal_t _SlDrvMsgRead(_u16* outMsgReadLen, _u8** pOutAsyncBuf)
     _u8               sd = SL_MAX_SOCKETS;
     _SlReturnVal_t    RetVal;
     _SlRxMsgClass_e   RxMsgClass;
-    int32_t           Count = 0;
+    int               Count = 0;
     /* Save parameters in global CB */
     g_pCB->FunctionParams.AsyncExt.AsyncEvtHandler = NULL;
     _SlDrvMemZero(&TailBuffer[0], sizeof(TailBuffer));
@@ -1401,7 +1404,8 @@ _SlReturnVal_t _SlDrvMsgRead(_u16* outMsgReadLen, _u8** pOutAsyncBuf)
             /* This case is for reading the receive response sent by clearing the control socket. */
             if((RetVal == SL_RET_OBJ_NOT_SET) && (SD(&uBuf.TempBuf[4]) == g_pCB->MultiSelectCB.CtrlSockFD))
             {
-                _u8 buffer[16];
+                /*KW - we need to allocate the maximum possible which is 24*/
+                _u8 buffer[RECVFROM_IPV6_ARGS_SIZE];
 
                 sl_Memcpy(&buffer[0], &uBuf.TempBuf[4], RECV_ARGS_SIZE);
 
@@ -2288,7 +2292,7 @@ _SlReturnVal_t _SlDrvProtectAsyncRespSetting(_u8 *pAsyncRsp, _SlActionID_e Actio
     }
     else if (MAX_CONCURRENT_ACTIONS == ObjIdx)
     {
-        return MAX_CONCURRENT_ACTIONS;
+        return SL_POOL_IS_EMPTY;
     }
     else
     {
@@ -3024,8 +3028,21 @@ _SlReturnVal_t _SlSpawnMsgListInsert(_u16 AsyncEventLen, _u8 *pAsyncBuf)
     _SlSpawnMsgItem_t* pItem;
 
     pItem = (_SlSpawnMsgItem_t*)sl_Malloc(sizeof(_SlSpawnMsgItem_t));
+    if (pItem == NULL)
+    {
+        RetVal = SL_RET_CODE_NO_FREE_ASYNC_BUFFERS_ERROR;
+        SL_DRV_PROTECTION_OBJ_UNLOCK();
+        return RetVal;
+    }
     /* now allocate the buffer itself */
     pItem->Buffer = (void*)sl_Malloc(AsyncEventLen);
+    if (pItem->Buffer == NULL)
+    {
+        sl_Free(pItem);
+        RetVal = SL_RET_CODE_NO_FREE_ASYNC_BUFFERS_ERROR;
+        SL_DRV_PROTECTION_OBJ_UNLOCK();
+        return RetVal;
+    }
     pItem->next = NULL;
     /* if list is empty point to the allocated one */
     if (g_pCB->spawnMsgList == NULL)
@@ -3117,7 +3134,7 @@ _SlReturnVal_t _SlSpawnMsgListProcess()
             _SlDrvAsyncEventGenericHandler(FALSE, (unsigned char *)&(g_StatMem.AsyncBufPool[i].Buffer));
 
             SL_DRV_LOCK_GLOBAL_UNLOCK(FALSE);
-	    
+
             SL_DRV_PROTECTION_OBJ_LOCK_FOREVER();
             g_StatMem.AsyncBufPool[i].ActionIndex = 0xFF;
             SL_DRV_PROTECTION_OBJ_UNLOCK();

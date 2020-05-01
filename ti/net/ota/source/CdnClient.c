@@ -46,6 +46,8 @@ int16_t CdnClient_Init(CdnClient_t *pCdnClient, uint8_t *pNetBuf)
     return CDN_STATUS_OK;
 }
 
+#if OTA_SERVER_TYPE != OTA_FILE_DOWNLOAD
+
 int16_t CdnClient_ConnectServer(CdnClient_t *pCdnClient, Ota_optServerInfo *pOtaServerInfo)
 {
     pCdnClient->pOtaServerInfo = pOtaServerInfo;
@@ -115,6 +117,7 @@ int16_t CdnClient_ReqFileUrl(CdnClient_t *pCdnClient, uint8_t *pOtaFileName, uin
 
     return CDN_STATUS_OK;
 }
+#endif // OTA_SERVER_TYPE != OTA_FILE_DOWNLOAD
 
 int16_t CdnClient_CloseServer(CdnClient_t *pCdnClient)
 {
@@ -169,8 +172,7 @@ int16_t CdnClient_ReqFileContent(CdnClient_t *pCdnClient, uint8_t *pFileUrl)
         _SlOtaLibTrace(("CdnClient_ReqFileContent: ERROR, HttpClient_ParseUrl, Status=%ld\r\n", status));
         return status;
     }
-
-    Len = CdnVendor_SendReqFileContent(pCdnClient->FileSockId, pCdnClient->pNetBuf, ServerNameBuf, pReqUriBuf);   
+    Len = HttpClient_SendReq(pCdnClient->FileSockId, pCdnClient->pNetBuf, (uint8_t *)"GET ", ServerNameBuf, NULL, pReqUriBuf, NULL, NULL);
     if (Len <= 0)
     {
         _SlOtaLibTrace(("CdnClient_ReqFileContent: ERROR, sl_Send, Status=%ld\r\n", Len));

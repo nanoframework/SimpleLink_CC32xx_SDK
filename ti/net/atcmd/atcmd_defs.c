@@ -364,7 +364,7 @@ StrMpl_List_t ATCmd_devStatusNetapp[8] =
     {"ipv6_lost", SL_DEVICE_EVENT_DROPPED_NETAPP_IPV6_LOST}
 };
 
-StrMpl_List_t ATCmd_wlanSecurity[7] =
+StrMpl_List_t ATCmd_wlanSecurity[9] =
 {
     {"open",SL_WLAN_SEC_TYPE_OPEN    },
     {"wep", SL_WLAN_SEC_TYPE_WEP   },
@@ -372,32 +372,38 @@ StrMpl_List_t ATCmd_wlanSecurity[7] =
     {"wps_pbc", SL_WLAN_SEC_TYPE_WPS_PBC   },
     {"wps_pin", SL_WLAN_SEC_TYPE_WPS_PIN   },
     {"wpa_ent", SL_WLAN_SEC_TYPE_WPA_ENT   },
-    {"wep_shared", SL_WLAN_SEC_TYPE_WEP_SHARED   }
+    {"wep_shared", SL_WLAN_SEC_TYPE_WEP_SHARED   },
+    {"wpa2_plus", SL_WLAN_SEC_TYPE_WPA2_PLUS   },
+    {"wpa3", SL_WLAN_SEC_TYPE_WPA3   }
 };
 
-StrMpl_List_t ATCmd_wlanScanSecurity[5] =
+StrMpl_List_t ATCmd_wlanScanSecurity[6] =
 {
     {"open", SL_WLAN_SECURITY_TYPE_BITMAP_OPEN   },
     {"wep", SL_WLAN_SECURITY_TYPE_BITMAP_WEP   },
     {"wpa", SL_WLAN_SECURITY_TYPE_BITMAP_WPA   },
     {"wpa2",  SL_WLAN_SECURITY_TYPE_BITMAP_WPA2  },
-    {"wpa_wpa2", SL_WLAN_SECURITY_TYPE_BITMAP_WPA | SL_WLAN_SECURITY_TYPE_BITMAP_WPA2 }
+    {"wpa_wpa2", SL_WLAN_SECURITY_TYPE_BITMAP_WPA | SL_WLAN_SECURITY_TYPE_BITMAP_WPA2 },
+    {"wpa3", SL_WLAN_SECURITY_TYPE_BITMAP_WPA3}
 };
 
-StrMpl_List_t ATCmd_wlanScanCipher[5] =
+StrMpl_List_t ATCmd_wlanScanCipher[6] =
 {
     {"none", 0   },
     {"wep40", SL_WLAN_CIPHER_BITMAP_WEP40   },
     {"wep104", SL_WLAN_CIPHER_BITMAP_WEP104   },
     {"tkip",  SL_WLAN_CIPHER_BITMAP_TKIP  },
-    {"ccmp", SL_WLAN_CIPHER_BITMAP_CCMP }
+    {"ccmp", SL_WLAN_CIPHER_BITMAP_CCMP },
+    {"tkip_ccmp", SL_WLAN_CIPHER_BITMAP_TKIP|SL_WLAN_CIPHER_BITMAP_CCMP }
 };
 
-StrMpl_List_t ATCmd_wlanScanKeyMgmt[3] =
+StrMpl_List_t ATCmd_wlanScanKeyMgmt[5] =
 {
     {"none", 0   },
     {"802_1_x", SL_WLAN_KEY_MGMT_SUITE_802_1_X   },
-    {"psk", SL_WLAN_KEY_MGMT_SUITE_PSK}
+    {"psk", SL_WLAN_KEY_MGMT_SUITE_PSK},
+    {"psk256", SL_WLAN_KEY_MGMT_SUITE_PSK256},
+    {"psk_sae", SL_WLAN_KEY_MGMT_SUITE_PSK_SAE}
 };
 
 StrMpl_List_t ATCmd_wlanEap[9] =

@@ -778,16 +778,12 @@ int16_t OtaArchive_commit()
 
 int16_t OtaArchive_checkVersion(OtaArchive_t *pOtaArchive, uint8_t *pVersionFileName)
 {
-    int16_t  Status = 0;
+    int16_t  Status = 0, i;
     uint8_t  OldVersionBuf[VERSION_STR_SIZE+1];
     uint8_t  NewVersionBuf[VERSION_STR_SIZE+1];
-    uint32_t OldVersion;
-    uint32_t NewVersion;
 
     memcpy(NewVersionBuf, pVersionFileName, VERSION_STR_SIZE);
     NewVersionBuf[VERSION_STR_SIZE]=0;
-    NewVersion = atol((const char *)NewVersionBuf);
-
     Status = _ReadOtaVersionFile(&pOtaArchive->OtaVersionFile);
     if(Status < 0)
     {
@@ -800,19 +796,31 @@ int16_t OtaArchive_checkVersion(OtaArchive_t *pOtaArchive, uint8_t *pVersionFile
         /* compare versions - only 8 digits */
         memcpy(OldVersionBuf, pOtaArchive->OtaVersionFile.VersionFilename, VERSION_STR_SIZE);
         OldVersionBuf[VERSION_STR_SIZE]=0;
-        OldVersion = atol((const char *)OldVersionBuf);
 
-        _SlOtaLibTrace(("    OtaArchive_CheckVersion: current version str = %s, decimal = %d\r\n", OldVersionBuf, OldVersion));
-        _SlOtaLibTrace(("    OtaArchive_CheckVersion: new     version str = %s, decimal = %d\r\n", NewVersionBuf, NewVersion));
-        if (NewVersion > OldVersion)
+        _SlOtaLibTrace(("    OtaArchive_CheckVersion: current version str = %s\r\n", OldVersionBuf));
+        _SlOtaLibTrace(("    OtaArchive_CheckVersion: new     version str = %s\r\n", NewVersionBuf));
+
+        Status = 0;
+        for(i=0; i<VERSION_STR_SIZE; i++)
+        {
+            if (NewVersionBuf[i] > OldVersionBuf[i])
+            {
+                Status = 1;
+                break;
+            }
+            if (NewVersionBuf[i] < OldVersionBuf[i])
+            {
+                break;
+            }
+        }
+
+        if (Status == 1)
         {
             _SlOtaLibTrace(("    OtaArchive_CheckVersion: newer version update - %s\r\n", NewVersionBuf));
-            Status = 1;
         }
         else
         {
             _SlOtaLibTrace(("    OtaArchive_CheckVersion: older version update - %s\r\n", NewVersionBuf));
-            Status = 0;
         }
     }
 
@@ -1096,7 +1104,7 @@ int16_t OtaArchive_process(OtaArchive_t *pOtaArchive, uint8_t *pRecvBuf, int16_t
                 {
                     FsOpenFlags |= SL_FS_CREATE_PUBLIC_WRITE;
                     FsOpenFlags |= SL_FS_CREATE_SECURE;
-                    if (pBundleFileInfo->SignatureBuf && pBundleFileInfo->SignatureLen)
+                    if (pBundleFileInfo->SignatureBuf[0] && pBundleFileInfo->SignatureLen)
                     {
                         FsOpenFlags &= ~SL_FS_CREATE_NOSIGNATURE;
                     }

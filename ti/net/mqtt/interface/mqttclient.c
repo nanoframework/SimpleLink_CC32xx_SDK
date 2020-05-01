@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2018, Texas Instruments Incorporated
+ * Copyright (C) 2016-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -467,6 +467,9 @@ int32_t MqttClientCtxCreate(const MQTTClient_Params *ctxCfg)
             {
                 /* Not all the secure connection parameters are set
                    Secure connection flag is on, missing security parameters */
+                sem_destroy(clientCtxPtr->ackSyncObj);
+                free(clientCtxPtr->ackSyncObj);
+                clientCtxPtr->ackSyncObj = NULL;
                 return -1;
             }
         }
@@ -475,6 +478,9 @@ int32_t MqttClientCtxCreate(const MQTTClient_Params *ctxCfg)
             /* Check if the UDP socket and the secure connection flags are on.
                This state isn't allowed
                Secure connection is on, UDP Socket is not allowed */
+            sem_destroy(clientCtxPtr->ackSyncObj);
+            free(clientCtxPtr->ackSyncObj);
+            clientCtxPtr->ackSyncObj = NULL;
             return -1;
         }
     }
@@ -500,6 +506,9 @@ int32_t MqttClientCtxCreate(const MQTTClient_Params *ctxCfg)
     if (retval < 0)
     {
         clientCtxPtr->inUse = false;
+        sem_destroy(clientCtxPtr->ackSyncObj);
+        free(clientCtxPtr->ackSyncObj);
+        clientCtxPtr->ackSyncObj = NULL;
         return -1;
     }
 
@@ -804,6 +813,12 @@ int16_t MQTTClient_delete(MQTTClient_Handle handle)
     int32_t retval;
     MQTTClient_Ctx_t *clientCtx = (MQTTClient_Ctx_t *)MQTTClient_clientContext;
 
+    /* Check for an invalid handle */
+    if (handle != (MQTTClient_Handle)1)
+    {
+        return (-1);
+    }
+
     /* When closeContext equal to 1, the Receive Task (MQTTClient_run
        function) will post MQTTClient_waitForMqttClose and close */
     MQTTClient_closeContext = 1;
@@ -842,13 +857,10 @@ int16_t MQTTClient_delete(MQTTClient_Handle handle)
             MQTTClient_Lib_CB.MQTTClient_libLock = NULL;
         }
 
-        if (MQTTClient_Lib_CB.MQTTClient_mutex != NULL)
-        {
-            /* Delete the MT lock object */
-            pthread_mutex_destroy(MQTTClient_Lib_CB.MQTTClient_mutex);
-            free(MQTTClient_Lib_CB.MQTTClient_mutex);
-            MQTTClient_Lib_CB.MQTTClient_mutex = NULL;
-        }
+        /* Delete the MT lock object */
+        pthread_mutex_destroy(MQTTClient_Lib_CB.MQTTClient_mutex);
+        free(MQTTClient_Lib_CB.MQTTClient_mutex);
+        MQTTClient_Lib_CB.MQTTClient_mutex = NULL;
 
         /* Delete the Rx-Tx task sync object */
         sem_destroy(MQTTClient_Lib_CB.MQTTClient_syncRxTx);

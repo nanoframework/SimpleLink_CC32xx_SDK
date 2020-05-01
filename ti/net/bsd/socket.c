@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,10 @@
 #include <errno.h>
 
 #include <ti/net/bsd/sys/socket.h>
+#include <ti/net/bsd/arpa/inet.h>
 #include <ti/net/bsd/errnoutil.h>
 #include <ti/net/slnetsock.h>
+#include <ti/net/slnetutils.h>
 #include <ti/net/slneterr.h>
 
 /* The implementation assumes the various SLNETSOCK_MSG_ flags passed
@@ -159,6 +161,18 @@ int getsockname(int fd, struct sockaddr *addr, socklen_t *addrlen)
 
 int setsockopt(int fd, int level, int optname, const void *optval, socklen_t optlen)
 {
+    const struct linger *tempLinger;
+
+    /* Negative l_linger values are not allowed */
+    if (optname == SO_LINGER && level == SOL_SOCKET)
+    {
+        tempLinger = optval;
+        if (tempLinger->l_linger < 0)
+        {
+            return ErrnoUtil_set(SLNETERR_BSD_EDOM);
+        }
+    }
+
     int RetVal = (int)SlNetSock_setOpt((int16_t)fd, level, optname, (void *)optval, optlen);
     return ErrnoUtil_set(RetVal);
 }
@@ -259,4 +273,53 @@ ssize_t sendto(int fd, const void *pBuf, size_t Len, int flags, const struct soc
     RetVal = (ssize_t)SlNetSock_sendTo((int16_t)fd, pBuf, (int16_t)Len, flags,
             (const SlNetSock_Addr_t *)to, tolen);
     return (ssize_t)(ErrnoUtil_set(RetVal));
+}
+
+/*******************************************************************************/
+/*  inet_pton */
+/*******************************************************************************/
+
+int inet_pton(int af, const char *src, void *dst)
+{
+    int ret;
+
+    /* This check is already performed in SlNetUtil_inetPton(), but we do it
+     * here because af is an int16_t argument there. This way we can ensure af
+     * will not be truncated once it gets to SlNetUtil_inetPton().
+     */
+    if(af != AF_INET && af != AF_INET6)
+    {
+        ret = ErrnoUtil_set(SLNETERR_BSD_EAFNOSUPPORT);
+    }
+    else
+    {
+        ret = SlNetUtil_inetPton(af, src, dst);
+    }
+
+    return ret;
+}
+
+/*******************************************************************************/
+/*  inet_ntop */
+/*******************************************************************************/
+
+const char *inet_ntop(int af, const void *src, char *dst, socklen_t size)
+{
+    const char *ret;
+
+    if(af != AF_INET && af != AF_INET6)
+    {
+        ErrnoUtil_set(SLNETERR_BSD_EAFNOSUPPORT);
+        ret = NULL;
+    }
+    else
+    {
+        ret = SlNetUtil_inetNtop(af, src, dst, size);
+        if(ret == NULL)
+        {
+            ErrnoUtil_set(SLNETERR_BSD_ENOSPC);
+        }
+    }
+
+    return ret;
 }

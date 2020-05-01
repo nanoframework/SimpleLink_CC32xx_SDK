@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Texas Instruments Incorporated
+ * Copyright (c) 2018-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -250,7 +250,7 @@ void DisplaySharp_clearLines(Display_Handle hDisplay,
  * @return      void
  */
 void DisplaySharp_vprintf(Display_Handle hDisplay, uint8_t line,
-                          uint8_t column, char *fmt, va_list va)
+                          uint8_t column, const char *fmt, va_list va)
 {
     DisplaySharp_Object *object = (DisplaySharp_Object  *)hDisplay->object;
 

@@ -1,112 +1,103 @@
-# CC3220SF LAUNCHXL Settings and Resources
+# SimpleLink&trade; CC3220SF LaunchPad&trade; Settings & Resources
 
-The CC3220SF LAUNCHXL board contains a CC3220SF device.
+The [__SimpleLink CC3220SF LaunchPad__][launchpad] contains a
+[__CC3220SF__][device] device.
 
-![](./images/CC3220SF_LAUNCHXL.jpg "CC3220SF LAUNCHXL")
 
 ## Jumper Settings
 
-* Set __RX__ and __TX__ to provide UART communications via the onboard USB debugger.
+* Close the __`LEDs`__ jumper to enable the on-board LEDs.
+* Close the __`RX`__ and __`TX`__ jumpers to enable UART via
+the XDS110 on-board USB debugger.
+* Close the __`OPAMP EN`__, __`GND`__, and __`BRD`__ jumpers to enable the
+operation amplifier circuit on analog pins __`P57`__, __`P58`__, __`P59`__,
+and __`P60`__. The operation amplifier circuit--even when disabled--prevents
+any output on the respective pins. Additionally, the input voltage is clipped
+to 1.4 Volts.
 
-## Board Resources Used in Driver Examples
 
-The following table lists the Board names of the resources used by
-the driver examples, and their corresponding pins.  Note that there may be
-other resources configured in the board files that are not used by any
-driver example.  Only the example resources are listed in the table.
+## Header Pins
 
-  |Board Resource|Pins|
-  |--------------|:---|
-  |`Board_ADC0`|P59  (Connect to analog signal)|
-  |`Board_ADC1`|P60  (Connect to analog signal)|
-  |`Board_CAPTURE0`|P04 |
-  |`Board_CAPTURE1`|P05 |
-  |`Board_GPIO_LED0`|P64  (__LED EN__ must be jumpered)|
-  |`Board_GPIO_LED1`|P64  (__LED EN__ must be jumpered)|
-  |`Board_GPIO_LED2`|P64  (__LED EN__ must be jumpered)|
-  |`Board_GPIO_BUTTON0`|P04  (`SW2`)|
-  |`Board_GPIO_BUTTON1`|P15  (`SW3`)|
-  |`Board_I2C0`|P01 - `SCL`, P02 - `SDA`|
-  |`Board_I2C_TMP`|P01 - `SCL`, P02 - `SDA`  (__SCL__ and __SDA__ must be jumpered)|
-  |`Board_I2S0`|P50 - `XR1`, P53 - `CLK`, P62 - `CLKX`, P63 - `FSX`, P64 - `XR0`|
-  |`Board_PWM0`|P01  (__LED EN__ must be jumpered)|
-  |`Board_PWM1`|P02  (__LED EN__ must be jumpered)|
-  |`Board_SD0`|P06 - `DATA`, P07 - `CLK`, P08 - `CMD`|
-  |`Board_SDFatFS0`|P06 - `DATA`, P07 - `CLK`, P08 - `CMD`|
-  |`Board_SPI0`|P05 - `CLK`, P06 - `MISO`, P07 - `MOSI`, P08 - `CS`|
-  |`Board_SPI_MASTER`|P05 - `CLK`, P06 - `MISO`, P07 - `MOSI`, P08 - `CS`|
-  |`Board_SPI_SLAVE`|P05 - `CLK`, P06 - `MISO`, P07 - `MOSI`, P08 - `CS`|
-  |`Board_SPI_MASTER_READY`|P18|
-  |`Board_SPI_SLAVE_READY`|P03|
-  |`Board_UART0`|P57 - `RX`, P55 - `TX`  (UART provided through emulation, __RX__ and __TX__ must be jumpered)|
-  |`Board_UART1`|P08 - `RX`, P07 - `TX`|
+Header pins designated with an asterisk (__`*`__) on the silkscreen are not
+connected to the device by default.
 
-## BoosterPacks
 
-The following examples require BoosterPacks.
+## SysConfig Board File
 
-  |Example|BoosterPack|
-  |-------|:------------|
-  |fatsd|[BOOSTXL-SHARP128 LCD & SDCard BoosterPack](http://www.ti.com/tool/boostxl-sharp128)|
-  |fatsdraw|[BOOSTXL-SHARP128 LCD & SDCard BoosterPack](http://www.ti.com/tool/boostxl-sharp128)|
-  |i2secho|[Audio BoosterPack](http://www.ti.com/tool/cc3200audboost)|
-  |portable|[BOOSTXL-BASSENSORS BoosterPack](http://www.ti.com/tool/BOOSTXL-BASSENSORS) (optional)|
-  |sdraw|[BOOSTXL-SHARP128 LCD & SDCard BoosterPack](http://www.ti.com/tool/boostxl-sharp128)|
-  |display|[BOOSTXL-SHARP128 LCD & SDCard BoosterPack](http://www.ti.com/tool/boostxl-sharp128)|
+The [CC3220SF_LAUNCHXL.syscfg.json](../.meta/CC3220SF_LAUNCHXL.syscfg.json)
+is a handcrafted file used by SysConfig. It describes the physical pin-out
+and components on the LaunchPad.
 
-### BOOSTXL-SHARP128 LCD & SDCard BoosterPack Modifications
 
->For the __fatsd__, __fatsdraw__ and __sdraw__ examples, the BOOSTXL-SHARP128 LCD & SDCard BoosterPack cannot be connected directly to the LaunchPad. Only the pins listed below should be connected from the LaunchPad to the BOOSTXL-SHARP128.
+## Driver Examples Resources
 
-Jumper wire the following from the LaunchPad `Board_SD0` to the BOOSTXL-SHARP128:
-* 1 - `3V3` to `3V3`
-* 2 - `GND` to `GND`
-* 3 - P08-`CMD` to `SPI_MOSI`
-* 4 - P07-`CLK` to `SPI_CLK`
-* 5 - P06-`CS` to `SPI_MISO`
+Examples utilize SysConfig to generate software configurations into
+the __ti_drivers_config.c__ and __ti_drivers_config.h__ files. The SysConfig
+user interface can be utilized to determine pins and resources used.
+Information on pins and resources used is also present in both generated files.
 
->For the __display__ example, the BOOSTXL-SHARP128 LCD & SDCard BoosterPack can be connected directly to the LaunchPad with the changes below.
 
-Jumper wire the following on the back of the LaunchPad
-* 1 - `P58(NC)` to `3V3`
-* 2 - `P59(NC)` to `P03`
+## TI BoosterPacks&trade;
 
-## ADC Examples Pin Connections
+The following BoosterPack(s) are used with some driver examples.
 
->__Important:__ The inputs to the ADC are required to be well within 1.4&nbsp;VDC to avoid clipping, which will cause distortion.
-The ADC inputs can be damaged if an input voltage higher than 1.8&nbsp;VDC is applied to these pin. The 1.8&nbsp;VDC hard limit must be considered from both the SW and HW points of view.
-Always add a resistor divider/buffer to bring down the measurement signal voltage to within the ADC limits. See the [CC32xx ADC Appnote](http://processors.wiki.ti.com/index.php/CC32xx_ADC_Appnote)
-for more details.
+#### [__BOOSTXL-SHARP128 LCD & SD Card BoosterPack__][boostxl-sharp128]
 
-The __CC3220SF LAUNCHXL__ has a protective circuit to allow an input of 3.3&nbsp;VDC.
-The `5V` should NOT be used for this may damage the ADC inputs. For testing, the following jumpers must be present:
-`J5` = `OPAMP EN`, `J10` = `GND`, `J13` = `BRD`.
+  * The SD card's default SPI bus is not compatible with this LaunchPad's
+    header pin layout. To use the SD card, the BoosterPack ___cannot___ be
+    placed directly atop the LaunchPad. Use the following modification(s) to
+    enable SD card usage with the __fatsd__, __fatsdraw__, and __sdraw__
+    example(s).
 
->__Note:__ There are duplicate pins P59 and P60 on the board. Choose the ones connected to the BoosterPack headers (the pins not connected to the BoosterPack headers have an asterisk next to them).
+    * Use a jumper wire to connect:
+
+          |   LaunchPad    | BOOSTXL-SHARP128 |
+          |:--------------:|:----------------:|
+          | __`3V3`__      | __`3V3`__        |
+          | __`GND`__      | __`GND`__        |
+          | __`P08/CMD`__  | __`SD_DET*`__    |
+          | __`P07/CLK`__  | __`SPI_MOSI`__   |
+          | __`P06/DATA`__ | __`SPI_MISO`__   |
+
+  * The LCD's SPI slave select and power pins are not compatible with this
+    LaunchPad's header pin layout. The BoosterPack ___can___ be placed
+    directly atop the LaunchPad. Use the following modification(s) to use
+    the BOOSTXL-SHARP128 LCD with the __display__ example.
+
+    * Use a jumper wire to connect:
+
+          | LaunchPad | BOOSTXL-SHARP128 |
+          |:---------:|:----------------:|
+          | __`3V3`__ | __`LCD_PWR`__    |
+          | __`P03`__ | __`LCD_CS`__     |
+
+#### [__BP-BASSENSORSMKII BoosterPack__][bp-bassensorsmkii]
+
+  * The OPT3001's interrupt pin is not compatible with this LaunchPad. Use one
+    of the following modification(s) to enable the OPT3001's usage with the
+    __i2copt3001_cpp__ example.
+
+    * Use a jumper wire to connect  __`O_INT`__ to __`P05`__.
+
+#### [__CC3200 Audio BoosterPack__][cc3200audboost]
+  * No modifications are needed.
+
 
 ## Reset Behavior
 
 By default, the application is not retained after a power reset. To enable
 retention of the application for debug purposes, the application should
 add the following pre-defined symbol: `__SF_DEBUG__`. This will place a header,
-`Board_debugHeader`, into flash. This header is defined in the Board.c file.
+`Board_debugHeader`, into flash. This header is defined in the SysConfig
+generated ti_drivers_config.c file.
 
 >__Note:__ The user should ensure the `Board_debugHeader` is erased if
-retention of the application is no longer desired. The Board.c file
+retention of the application is no longer desired. The ti_drivers_config.c file
 will erase the `Board_debugHeader` if `__SF_NODEBUG__` is defined.
 
-## Peripherals Used
 
-The following list shows which CC3220SF peripherals are used by
-driver and kernel applications. Driver examples control which peripherals (and which ports) are used.
-
-* __TI-RTOS Kernel (SYS/BIOS).__ Uses the first general-purpose timer available and that timer's associated interrupts. Generally, this will be Timer\_A0. The TI-RTOS Kernel manages the interrupt controller statically without an interrupt dispatcher.
-* __Drivers.__
-    * __I<sup>2</sup>C:__ The I<sup>2</sup>C driver is configured to support various BoosterPacks.
-    * __PWM:__ The PWM driver uses the onboard LEDs (P01 and P02). These pins are configured for the PWM driver. While these pins can also be used by the GPIO driver, your application's board file must ensure that the pins are not simultaneously used by the GPIO and PWM drivers.
-    * __SD:__ The SD driver is used to communicate with an SD card.  `Board_SD0` is used to send data to-and-from the SD card.
-    * __SDFatFS:__ The SDFatFS driver relies on an SD driver instance to communicate with an SD card; `Board_SDFatFS0` uses the `Board_SD0` driver instance.
-    * __SPI:__ The SPI driver is configured for SPI communications.
-    * __Timer:__ The Timer and PWM driver uses the timer peripheral.
-    * __UART:__ The UART driver uses UART0, which is attached to the onboard emulator to facilitate serial communications.
-    * __Watchdog:__ The Watchdog driver example uses the Watchdog Timer peripheral.
+[device]: http://www.ti.com/product/CC3220SF
+[launchpad]: http://www.ti.com/tool/CC3220SF-LAUNCHXL
+[boostxl-sharp128]: http://www.ti.com/tool/boostxl-sharp128
+[bp-bassensorsmkii]: http://www.ti.com/tool/bp-bassensorsmkii
+[cc3200audboost]: http://www.ti.com/tool/cc3200audboost

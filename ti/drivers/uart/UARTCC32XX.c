@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2019, Texas Instruments Incorporated
+ * Copyright (c) 2014-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -459,6 +459,9 @@ UART_Handle UARTCC32XX_open(UART_Handle handle, UART_Params *params)
      *  and DSLP modes.
      */
     Power_setDependency(object->powerMgrId);
+
+    /* Do a software reset of the peripheral */
+    PowerCC32XX_reset(object->powerMgrId);
 
     pin = (hwAttrs->rxPin) & 0xff;
     mode = (hwAttrs->rxPin >> 8) & 0xff;
@@ -1110,6 +1113,8 @@ static int readTaskBlocking(UART_Handle handle)
     unsigned char             *buffer = object->readBuf;
 
     object->state.bufTimeout = false;
+    object->state.callCallback = false;
+
     /*
      * It is possible for the object->timeoutClk and the callback function to
      * have posted the object->readSem Semaphore from the previous UART_read

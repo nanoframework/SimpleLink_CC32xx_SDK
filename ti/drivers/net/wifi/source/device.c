@@ -118,8 +118,9 @@ void* sl_Task(void* pEntry)
 #if _SL_INCLUDE_FUNC(sl_Start)
 _i16 sl_Start(const void* pIfHdl, _i8*  pDevName, const P_INIT_CALLBACK pInitCallBack)
 {
-    _u8 ObjIdx = MAX_CONCURRENT_ACTIONS;
+    _i16 ObjIdx = MAX_CONCURRENT_ACTIONS;
     InitComplete_t  AsyncRsp;
+    int ret = 0;    // added for releasePoolObj
 
     _SlDrvMemZero(&AsyncRsp, sizeof(InitComplete_t));
 
@@ -150,9 +151,9 @@ _i16 sl_Start(const void* pIfHdl, _i8*  pDevName, const P_INIT_CALLBACK pInitCal
 
     ObjIdx = _SlDrvProtectAsyncRespSetting((_u8 *)&AsyncRsp, START_STOP_ID, SL_MAX_SOCKETS);
 
-    if (MAX_CONCURRENT_ACTIONS == ObjIdx)
+    if (ObjIdx < 0)
     {
-        return SL_POOL_IS_EMPTY;
+        return ObjIdx;
     }
 
     if( g_pCB->FD >= (_SlFd_t)0)
@@ -174,8 +175,7 @@ _i16 sl_Start(const void* pIfHdl, _i8*  pDevName, const P_INIT_CALLBACK pInitCal
         
         if (NULL == pInitCallBack)
         {
-
-            VERIFY_RET_OK(_SlDrvWaitForInternalAsyncEvent(ObjIdx, INIT_COMPLETE_TIMEOUT, SL_OPCODE_DEVICE_INITCOMPLETE));
+            ret = _SlDrvWaitForInternalAsyncEvent(ObjIdx, INIT_COMPLETE_TIMEOUT, SL_OPCODE_DEVICE_INITCOMPLETE);
 
             SL_UNSET_DEVICE_START_IN_PROGRESS;
 
@@ -183,7 +183,14 @@ _i16 sl_Start(const void* pIfHdl, _i8*  pDevName, const P_INIT_CALLBACK pInitCal
 
             /* release Pool Object */
             _SlDrvReleasePoolObj(g_pCB->FunctionParams.AsyncExt.ActionIndex);
-            return _SlDeviceGetStartResponseConvert(AsyncRsp.Status);
+            if(ret < 0)
+            {
+                return ret;
+            }
+            else
+            {
+                return _SlDeviceGetStartResponseConvert(AsyncRsp.Status);
+            }
         }
         else
         {
@@ -275,7 +282,7 @@ _i16 sl_Stop(const _u16 Timeout)
     _i16 RetVal=0;
     _SlStopMsg_u      Msg;
     _BasicResponse_t  AsyncRsp;
-    _u8 ObjIdx = MAX_CONCURRENT_ACTIONS;
+    _i16 ObjIdx = MAX_CONCURRENT_ACTIONS;
     _u8 ReleasePoolObject = FALSE;
     _u8 IsProvInProgress = FALSE;
 
@@ -299,9 +306,9 @@ _i16 sl_Stop(const _u16 Timeout)
         if (!IsProvInProgress)
         {
             ObjIdx = _SlDrvProtectAsyncRespSetting((_u8 *)&AsyncRsp, START_STOP_ID, SL_MAX_SOCKETS);
-            if (MAX_CONCURRENT_ACTIONS == ObjIdx)
+            if (ObjIdx < 0)
             {
-              return SL_POOL_IS_EMPTY;
+                return ObjIdx;
             }
 
             ReleasePoolObject = TRUE;
@@ -312,11 +319,13 @@ _i16 sl_Stop(const _u16 Timeout)
 
         VERIFY_RET_OK(_SlDrvCmdOp((_SlCmdCtrl_t *)&_SlStopCmdCtrl, &Msg, NULL));
 
+        int ret_pool = 0; // for _SlDrvReleasePoolObj
         /* Do not wait for stop async event if provisioning is in progress */
-       if((SL_OS_RET_CODE_OK == (_i16)Msg.Rsp.status) && (!(IsProvInProgress)))
-       {
+        if((SL_OS_RET_CODE_OK == (_i16)Msg.Rsp.status) && (!(IsProvInProgress)))
+        {
             /* Wait for sync object to be signaled */
-            VERIFY_RET_OK(_SlDrvWaitForInternalAsyncEvent(ObjIdx, STOP_DEVICE_TIMEOUT, SL_OPCODE_DEVICE_STOP_ASYNC_RESPONSE));
+            ret_pool = _SlDrvWaitForInternalAsyncEvent(ObjIdx, STOP_DEVICE_TIMEOUT, SL_OPCODE_DEVICE_STOP_ASYNC_RESPONSE);
+
             Msg.Rsp.status = AsyncRsp.status;
             RetVal = Msg.Rsp.status;
         }
@@ -325,6 +334,10 @@ _i16 sl_Stop(const _u16 Timeout)
         if (ReleasePoolObject == TRUE)
         {
             _SlDrvReleasePoolObj(ObjIdx);
+            if(ret_pool < 0)
+            {
+                return ret_pool;
+            }
         }
     
         /* This macro wait for the NWP to raise a ready for shutdown indication.

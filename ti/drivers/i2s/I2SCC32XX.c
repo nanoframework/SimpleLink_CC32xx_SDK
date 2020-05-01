@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Texas Instruments Incorporated
+ * Copyright (c) 2019-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,12 +70,15 @@
 #define PAD_RESET_STATE 0xC61
 #define I2S_NB_CHANNELS_MAX                       8U
 #define BYTE_LENGTH                               8U /* Length in bits of a byte*/
+#define UDMA_MAX_TRANSFERLENGTH                   1023 /* This is the maximum transfer length for uDMA in MODE BASIC. Transfers lengths must be inferior or equal to this value. */
 #define HWRESOLUTION                              4U /* All the settings are expressed in half-bytes (4 bits) */
 #define PRCMI2SCLOCKFREQMIN                       234377 /* Minimum Frequency (in Hz) possible with only one divider */
 #define HCLKDIVMAX                                0xFFF  /* Max division of ulHClkDiv (ulHClkDiv is a 12-bit clock divider) */
 
-#define MCASP_RXFMT_RDATDLY_DEFAULT               0x10000 /* This value is the default value to use for RXFMT.RDATDLY */
-#define MCASP_TXFMT_XDATDLY_DEFAULT               0x10000 /* This value is the default value to use for TXFMT.XDATDLY */
+#define DATA_SHIFT_NONE                           0x00 /* Value to use for RXFMT.RDATDLY and TXFMT.XDATDLY if no data shift is expected */
+#define DATA_SHIFT_1                              0x01 /* Value to use for RXFMT.RDATDLY and TXFMT.XDATDLY if data are expected to shift by one - Value to use for true I2S format */
+#define DATA_SHIFT_2                              0x02 /* Value to use for RXFMT.RDATDLY and TXFMT.XDATDLY if data are expected to shift by two */
+
 #define MCASP_RXFMCTL_FRWID_DEFAULT               0x10 /* This value is the default value to use for RXFMCTL.FRWID */
 #define MCASP_TXFMCTL_FXWID_DEFAULT               0x10 /* This value is the default value to use for TXFMCTL.FXWID */
 #define MCASP_RXFMCTL_RMOD_DEFAULT                0x100 /* This value is the default value to use for RXFMCTL.RMOD */
@@ -147,7 +150,7 @@ static void handleDMATransaction(I2S_Handle handle, I2S_Transaction *transaction
 static void handleCPUTransaction(I2S_Handle handle, I2S_Transaction **ptrTransaction, I2SCC32XX_Interface *interface);
 
 /* Extern globals */
-extern I2S_Config I2S_config[];
+extern const I2S_Config I2S_config[];
 extern const uint_least8_t I2S_count;
 
 /* Static globals */
@@ -334,6 +337,9 @@ void I2S_stopClocks(I2S_Handle handle) {
 
     I2SCC32XX_Object *object = handle->object;
 
+    /* Wait for the transfers to be properly terminated */
+    while(object->isLastReadTransfer || object->isLastWriteTransfer);
+
     MAP_I2SIntDisable(I2S_BASE,    I2S_INT_RSYNCERR | I2S_INT_XSYNCERR);
 
     uintptr_t key = HwiP_disable();
@@ -375,11 +381,11 @@ void I2S_startRead(I2S_Handle handle) {
             object->updateDataReadFxn((uintptr_t)handle);
             MAP_I2SRxFIFOEnable(I2S_BASE, object->udmaArbLength, object->noOfInputs);
 
-            /* Enable I2S_INT_RDATA | I2S_INT_ROVRN | I2S_INT_RLAST */
+            /* Enable I2S_INT_RDMA | I2S_INT_ROVRN | I2S_INT_RLAST */
             /* Note: we do not activate the I2S_STS_RDMAERR flag (uDMA's responsibility) */
-            HWREG(APPS_CONFIG_BASE + APPS_CONFIG_O_DMA_DONE_INT_MASK_CLR ) |= (((I2S_INT_RDATA | I2S_INT_ROVRN | I2S_INT_RLAST) &0xC0000000) >> 20);
-            HWREG(I2S_BASE + MCASP_O_EVTCTLR) |= (((I2S_INT_RDATA | I2S_INT_ROVRN | I2S_INT_RLAST) >> 16) & 0xFF);
-            object->activatedFlag |= I2S_STS_RLAST | I2S_STS_ROVERN | I2S_STS_RDATA;
+            HWREG(APPS_CONFIG_BASE + APPS_CONFIG_O_DMA_DONE_INT_MASK_CLR ) |= (((I2S_INT_RDMA | I2S_INT_ROVRN | I2S_INT_RLAST) &0xC0000000) >> 20);
+            HWREG(I2S_BASE + MCASP_O_EVTCTLR) |= (((I2S_INT_RDMA | I2S_INT_ROVRN | I2S_INT_RLAST) >> 16) & 0xFF);
+            object->activatedFlag |= I2S_STS_RLAST | I2S_STS_ROVERN | I2S_STS_RDMA;
         }
         HwiP_restore(key);
 
@@ -422,11 +428,11 @@ void I2S_startWrite(I2S_Handle handle) {
             object->updateDataWriteFxn((uintptr_t)handle);
             MAP_I2STxFIFOEnable(I2S_BASE, object->udmaArbLength, object->noOfOutputs);
 
-            /* Enable I2S_INT_XDATA | I2S_INT_XLAST | I2S_INT_XUNDRN */
+            /* Enable I2S_INT_XDMA | I2S_INT_XLAST | I2S_INT_XUNDRN */
             /* Note: we do not activate the I2S_STS_XDMAERR flag (uDMA's responsibility) */
-            HWREG(APPS_CONFIG_BASE + APPS_CONFIG_O_DMA_DONE_INT_MASK_CLR ) |= (((I2S_INT_XDATA | I2S_INT_XLAST | I2S_INT_XUNDRN) &0xC0000000) >> 20);
-            HWREG(I2S_BASE + MCASP_O_EVTCTLX) |= ((I2S_INT_XDATA | I2S_INT_XLAST | I2S_INT_XUNDRN) & 0xFF);
-            object->activatedFlag |= I2S_STS_XLAST | I2S_STS_XUNDRN | I2S_STS_XDATA;
+            HWREG(APPS_CONFIG_BASE + APPS_CONFIG_O_DMA_DONE_INT_MASK_CLR ) |= (((I2S_INT_XDMA | I2S_INT_XLAST | I2S_INT_XUNDRN) &0xC0000000) >> 20);
+            HWREG(I2S_BASE + MCASP_O_EVTCTLX) |= ((I2S_INT_XDMA | I2S_INT_XLAST | I2S_INT_XUNDRN) & 0xFF);
+            object->activatedFlag |= I2S_STS_XLAST | I2S_STS_XUNDRN | I2S_STS_XDMA;
         }
         HwiP_restore(key);
 
@@ -445,7 +451,6 @@ void I2S_startWrite(I2S_Handle handle) {
 void I2S_stopRead(I2S_Handle handle) {
 
     I2SCC32XX_Object *object = handle->object;
-    I2SCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
     I2SCC32XX_DataInterface *SD0;
     I2SCC32XX_DataInterface *SD1;
 
@@ -453,30 +458,28 @@ void I2S_stopRead(I2S_Handle handle) {
     SD0 = &object->dataInterfaceSD0;
     SD1 = &object->dataInterfaceSD1;
 
-    MAP_I2SIntDisable(I2S_BASE,    I2S_INT_RDATA | I2S_INT_ROVRN );
+    if(object->noOfInputs != 0) {
 
-    uintptr_t key = HwiP_disable();
-    /* Keep activatedFlag to be modified from somewhere else */
-    object->activatedFlag &= ~(I2S_STS_RDATA | I2S_STS_ROVERN);
-    HwiP_restore(key);
+        if(!object->isDMAUnused) {
+            /* To stop the Read interface, we must wait for the end of the current DMA transaction*/
+            object->isLastReadTransfer = (bool)true;
+        }
+        else {
 
-    if(!object->isDMAUnused) {
-        /* RLAST is activated only for transfers in DMA mode */
-        MAP_I2SIntDisable(I2S_BASE,    I2S_INT_RLAST);
-        key = HwiP_disable();
-        object->activatedFlag &= ~(I2S_STS_RLAST);
-        HwiP_restore(key);
+            MAP_I2SIntDisable(I2S_BASE, I2S_INT_RDMA | I2S_INT_ROVRN );
 
-        /* Wait the end of the current transfer to close properly the DMA channel*/
-        while(MAP_uDMAChannelModeGet(hwAttrs->rxChannelIndex) != UDMA_MODE_STOP);
-        MAP_I2SRxFIFODisable(I2S_BASE);
-    }
+            uintptr_t key = HwiP_disable();
+            /* Keep activatedFlag to be modified from somewhere else */
+            object->activatedFlag &= ~(I2S_STS_RDMA  | I2S_STS_ROVERN);
+            HwiP_restore(key);
 
-    if(SD0->interfaceConfig == I2S_SD0_INPUT) {
-        MAP_I2SSerializerConfig(I2S_BASE, SD0->dataLine, I2S_SER_MODE_DISABLE, I2S_INACT_LOW_LEVEL);
-    }
-    if(SD1->interfaceConfig == I2S_SD1_INPUT) {
-        MAP_I2SSerializerConfig(I2S_BASE, SD1->dataLine, I2S_SER_MODE_DISABLE, I2S_INACT_LOW_LEVEL);
+            if(SD0->interfaceConfig == I2S_SD0_INPUT) {
+                MAP_I2SSerializerConfig(I2S_BASE, SD0->dataLine, I2S_SER_MODE_DISABLE, I2S_INACT_LOW_LEVEL);
+            }
+            if(SD1->interfaceConfig == I2S_SD1_INPUT) {
+                MAP_I2SSerializerConfig(I2S_BASE, SD1->dataLine, I2S_SER_MODE_DISABLE, I2S_INACT_LOW_LEVEL);
+            }
+        }
     }
 }
 
@@ -486,7 +489,6 @@ void I2S_stopRead(I2S_Handle handle) {
 void I2S_stopWrite(I2S_Handle handle) {
 
     I2SCC32XX_Object *object = handle->object;
-    I2SCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
     I2SCC32XX_DataInterface *SD0;
     I2SCC32XX_DataInterface *SD1;
 
@@ -494,30 +496,28 @@ void I2S_stopWrite(I2S_Handle handle) {
     SD0 = &object->dataInterfaceSD0;
     SD1 = &object->dataInterfaceSD1;
 
-    MAP_I2SIntDisable(I2S_BASE,    I2S_INT_XDATA | I2S_INT_XUNDRN);
+    if(object->noOfOutputs != 0) {
 
-    uintptr_t key = HwiP_disable();
-    /* Keep activatedFlag to be modified from somewhere else */
-    object->activatedFlag &= ~(I2S_STS_XDATA | I2S_STS_XUNDRN);
-    HwiP_restore(key);
+        if(!object->isDMAUnused) {
+            /* To stop the Write interface, we must wait for the end of the current DMA transaction*/
+            object->isLastWriteTransfer = (bool)true;
+        }
+        else {
 
-    if(!object->isDMAUnused) {
-        /* XLAST is activated only for transfers in DMA mode */
-        MAP_I2SIntDisable(I2S_BASE,    I2S_INT_XLAST);
-        key = HwiP_disable();
-        object->activatedFlag &= ~(I2S_STS_XLAST);
-        HwiP_restore(key);
+            MAP_I2SIntDisable(I2S_BASE, I2S_INT_XDMA | I2S_INT_XUNDRN);
 
-        /* Wait the end of the current transfer to close properly the DMA channel*/
-        while(MAP_uDMAChannelModeGet(hwAttrs->txChannelIndex) != UDMA_MODE_STOP);
-        MAP_I2STxFIFODisable(I2S_BASE);
-    }
+            uintptr_t key = HwiP_disable();
+            /* Keep activatedFlag to be modified from somewhere else */
+            object->activatedFlag &= ~(I2S_STS_XDMA | I2S_STS_XUNDRN);
+            HwiP_restore(key);
 
-    if(SD0->interfaceConfig == I2S_SD0_OUTPUT) {
-        MAP_I2SSerializerConfig(I2S_BASE, SD0->dataLine, I2S_SER_MODE_DISABLE, I2S_INACT_LOW_LEVEL);
-    }
-    if(SD1->interfaceConfig == I2S_SD1_OUTPUT) {
-        MAP_I2SSerializerConfig(I2S_BASE, SD1->dataLine, I2S_SER_MODE_DISABLE, I2S_INACT_LOW_LEVEL);
+            if(SD0->interfaceConfig == I2S_SD0_OUTPUT) {
+                MAP_I2SSerializerConfig(I2S_BASE, SD0->dataLine, I2S_SER_MODE_DISABLE, I2S_INACT_LOW_LEVEL);
+            }
+            if(SD1->interfaceConfig == I2S_SD1_OUTPUT) {
+                MAP_I2SSerializerConfig(I2S_BASE, SD1->dataLine, I2S_SER_MODE_DISABLE, I2S_INACT_LOW_LEVEL);
+            }
+        }
     }
 }
 
@@ -565,12 +565,12 @@ static void I2S_hwiIntFxn(uintptr_t arg) {
 
 
     /* Normal work */
-    if((interruptStatus & (uint32_t)(I2S_STS_RLAST | I2S_STS_RDATA)) != 0U)
+    if((interruptStatus & (uint32_t)(I2S_STS_RLAST | I2S_STS_RDATA | I2S_STS_RDMA)) != 0U)
     {
         object->updateDataReadFxn(arg);
     }
 
-    if((interruptStatus & (uint32_t)(I2S_STS_XLAST | I2S_STS_XDATA)) != 0U)
+    if((interruptStatus & (uint32_t)(I2S_STS_XLAST | I2S_STS_XDATA | I2S_STS_XDMA)) != 0U)
     {
         object->updateDataWriteFxn(arg);
     }
@@ -624,24 +624,51 @@ static void updateDataReadDMA(uintptr_t arg) {
     /* Wait for the mode to be changed to "stopped" */
     if(MAP_uDMAChannelModeGet(hwAttrs->rxChannelIndex) == UDMA_MODE_STOP){
 
-        I2S_Transaction *transaction = (I2S_Transaction *)object->read.activeTransfer;
-        if(transaction != NULL) {
+        if(!object->isLastReadTransfer) {
 
-            uint32_t transLength = transaction->bufSize - transaction->bytesTransferred;   /* transfer length expressed in bytes */
-            transLength = transLength / (object->memorySlotLength / BYTE_LENGTH);          /* expressed in number of samples (number of atomic DMA transfers) */
-            transLength = transLength - (transLength % object->udmaArbLength);             /* taking in consideration the limitation of the DMA (DMA copies each time UDMA_ARB_x samples) */
+            I2S_Transaction *transaction = (I2S_Transaction *)object->read.activeTransfer;
+            if(transaction != NULL) {
 
-            MAP_uDMAChannelControlSet(hwAttrs->rxChannelIndex,
-                                  object->read.udmaConfig);
-            MAP_uDMAChannelTransferSet(hwAttrs->rxChannelIndex,
-                                   UDMA_MODE_BASIC,
-                                   (void *)I2S_RX_DMA_PORT,
-                                   (void *)((uint32_t)transaction->bufPtr + transaction->bytesTransferred),
-                                   transLength);
+                uint32_t transLength = transaction->bufSize - transaction->bytesTransferred;                   /* transfer length expressed in bytes */
+                transLength = transLength / (object->memorySlotLength / BYTE_LENGTH);                          /* expressed in number of samples (number of atomic DMA transfers) */
+                transLength = (transLength > UDMA_MAX_TRANSFERLENGTH)? UDMA_MAX_TRANSFERLENGTH : transLength;  /* the transfer length of the uDMA is limited */
+                transLength = transLength - (transLength % object->udmaArbLength);                             /* taking in consideration the limitation of the DMA (DMA copies each time UDMA_ARB_x samples) */
 
-            MAP_uDMAChannelEnable(hwAttrs->rxChannelIndex);
+                MAP_uDMAChannelControlSet(hwAttrs->rxChannelIndex,
+                                      object->read.udmaConfig);
+                MAP_uDMAChannelTransferSet(hwAttrs->rxChannelIndex,
+                                       UDMA_MODE_BASIC,
+                                       (void *)I2S_RX_DMA_PORT,
+                                       (void *)((uint32_t)transaction->bufPtr + transaction->bytesTransferred),
+                                       transLength);
 
-            handleDMATransaction(handle, transaction, transLength, &object->read);
+                MAP_uDMAChannelEnable(hwAttrs->rxChannelIndex);
+
+                transLength = transLength * (object->memorySlotLength / BYTE_LENGTH);                         /* handleDMATransaction() expects transLength in bytes (not in samples): re-convert transLength in bytes */
+                handleDMATransaction(handle, transaction, transLength, &object->read);
+            }
+        }
+        else {
+            I2SCC32XX_DataInterface *SD0;
+            I2SCC32XX_DataInterface *SD1;
+
+            /* Get the pointer to the SD0 and SD1 interfaces*/
+            SD0 = &object->dataInterfaceSD0;
+            SD1 = &object->dataInterfaceSD1;
+
+            MAP_I2SIntDisable(I2S_BASE, I2S_INT_RLAST | I2S_INT_RDMA | I2S_INT_ROVRN);
+            object->activatedFlag &=  ~(I2S_STS_RLAST | I2S_STS_RDMA | I2S_STS_ROVERN);
+
+            MAP_I2SRxFIFODisable(I2S_BASE);
+
+            if(SD0->interfaceConfig == I2S_SD0_INPUT) {
+                MAP_I2SSerializerConfig(I2S_BASE, SD0->dataLine, I2S_SER_MODE_DISABLE, I2S_INACT_LOW_LEVEL);
+            }
+            if(SD1->interfaceConfig == I2S_SD1_INPUT) {
+                MAP_I2SSerializerConfig(I2S_BASE, SD1->dataLine, I2S_SER_MODE_DISABLE, I2S_INACT_LOW_LEVEL);
+            }
+
+            object->isLastReadTransfer = (bool)false;
         }
     }
 }
@@ -653,28 +680,55 @@ static void updateDataWriteDMA(uintptr_t arg) {
     I2S_Handle handle = (I2S_Handle)arg;
     I2SCC32XX_Object *object = handle->object;
     I2SCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
+    I2SCC32XX_DataInterface *SD0;
+    I2SCC32XX_DataInterface *SD1;
 
     /* Wait for the mode to be changed to "stopped" */
     if(MAP_uDMAChannelModeGet(hwAttrs->txChannelIndex) == UDMA_MODE_STOP){
 
-        I2S_Transaction *transaction = (I2S_Transaction *)object->write.activeTransfer;
-        if(transaction != NULL) {
+        if(!object->isLastWriteTransfer) {
+            I2S_Transaction *transaction = (I2S_Transaction *)object->write.activeTransfer;
+            if(transaction != NULL) {
 
-            uint32_t transLength = transaction->bufSize - transaction->bytesTransferred;    /* transfer length expressed in bits */
-            transLength = transLength / (object->memorySlotLength / BYTE_LENGTH);           /* expressed in number of samples (number of atomic DMA transfers) */
-            transLength = transLength - (transLength % object->udmaArbLength);              /* taking in consideration the limitation of the DMA (DMA copies each time UDMA_ARB_x samples) */
+                uint32_t transLength = transaction->bufSize - transaction->bytesTransferred;                   /* transfer length expressed in bits */
+                transLength = transLength / (object->memorySlotLength / BYTE_LENGTH);                          /* expressed in number of samples (number of atomic DMA transfers) */
+                transLength = (transLength > UDMA_MAX_TRANSFERLENGTH)? UDMA_MAX_TRANSFERLENGTH : transLength;  /* the transfer length of the uDMA is limited */
+                transLength = transLength - (transLength % object->udmaArbLength);                             /* taking in consideration the limitation of the DMA (DMA copies each time UDMA_ARB_x samples) */
 
-            MAP_uDMAChannelControlSet(hwAttrs->txChannelIndex,
-                                  object->write.udmaConfig);
-            MAP_uDMAChannelTransferSet(hwAttrs->txChannelIndex,
-                                   UDMA_MODE_BASIC,
-                                   (void *)((uint32_t)transaction->bufPtr + transaction->bytesTransferred),
-                                   (void *)I2S_TX_DMA_PORT,
-                                   transLength);
+                MAP_uDMAChannelControlSet(hwAttrs->txChannelIndex,
+                                      object->write.udmaConfig);
+                MAP_uDMAChannelTransferSet(hwAttrs->txChannelIndex,
+                                       UDMA_MODE_BASIC,
+                                       (void *)((uint32_t)transaction->bufPtr + transaction->bytesTransferred),
+                                       (void *)I2S_TX_DMA_PORT,
+                                       transLength);
 
-            MAP_uDMAChannelEnable(hwAttrs->txChannelIndex);
+                MAP_uDMAChannelEnable(hwAttrs->txChannelIndex);
 
-            handleDMATransaction(handle, transaction, transLength, &object->write);
+                transLength = transLength * (object->memorySlotLength / BYTE_LENGTH);                         /* handleDMATransaction() expects transLength in bytes (not in samples): re-convert transLength in bytes */
+                handleDMATransaction(handle, transaction, transLength, &object->write);
+            }
+        }
+
+        else {
+
+            /* Get the pointer to the SD0 and SD1 interfaces*/
+            SD0 = &object->dataInterfaceSD0;
+            SD1 = &object->dataInterfaceSD1;
+
+            MAP_I2SIntDisable(I2S_BASE, I2S_INT_XDMA | I2S_INT_XUNDRN | I2S_INT_XLAST);
+            object->activatedFlag &=  ~(I2S_STS_XDMA | I2S_STS_XUNDRN | I2S_STS_XLAST);
+
+            MAP_I2STxFIFODisable(I2S_BASE);
+
+            if(SD0->interfaceConfig == I2S_SD0_OUTPUT) {
+                MAP_I2SSerializerConfig(I2S_BASE, SD0->dataLine, I2S_SER_MODE_DISABLE, I2S_INACT_LOW_LEVEL);
+            }
+            if(SD1->interfaceConfig == I2S_SD1_OUTPUT) {
+                MAP_I2SSerializerConfig(I2S_BASE, SD1->dataLine, I2S_SER_MODE_DISABLE, I2S_INACT_LOW_LEVEL);
+            }
+
+            object->isLastWriteTransfer = (bool)false;
         }
     }
 }
@@ -692,21 +746,43 @@ static void handleDMATransaction(I2S_Handle      handle,
 
     I2SCC32XX_Object *object = handle->object;
 
-    /* As we already start this transaction, is no longer required to be considered */
-    interface->activeTransfer = (I2S_Transaction*)List_next(&transactionFinished->queueElement);
+    /* Is the transaction finished? (i.e. all the element are sent or we cannot perform the next DMA) */
+    uint16_t dmaMinimumStep = object->udmaArbLength * object->memorySlotLength / BYTE_LENGTH;
+    if(((transactionFinished->bytesTransferred + transLength + dmaMinimumStep) > transactionFinished->bufSize)) {
 
-    transactionFinished->untransferredBytes = transactionFinished->bufSize - (transLength * (object->memorySlotLength / BYTE_LENGTH));
-    transactionFinished->numberOfCompletions ++;
-    transactionFinished->bytesTransferred = 0;
+        /* This transaction is finished */
+        interface->activeTransfer = (I2S_Transaction*)List_next(&transactionFinished->queueElement);
 
-    if(interface->activeTransfer == NULL) {
-        interface->callback(handle, I2S_ALL_TRANSACTIONS_SUCCESS, transactionFinished);
+        transactionFinished->untransferredBytes = transactionFinished->bufSize - transLength;
+        transactionFinished->numberOfCompletions ++;
+        transactionFinished->bytesTransferred = 0;
+
+        if(interface->activeTransfer == NULL) {
+            interface->callback(handle, I2S_ALL_TRANSACTIONS_SUCCESS, transactionFinished);
+
+            /* If needed the interface must be stopped */
+            if(interface->activeTransfer != NULL){
+                /* Application called I2S_setXxxxQueueHead()
+                 *     -> new transfers can be executed next time */
+            }
+            else if((I2S_Transaction*)List_next(&transactionFinished->queueElement) != NULL){
+                /* Application queued transactions after the transaction finished
+                 *     -> activeTransfer must be modified and transfers can be executed next time */
+                interface->activeTransfer = (I2S_Transaction*)List_next(&transactionFinished->queueElement);
+            }
+            else {
+                /* Application did nothing, we need to stop the interface to avoid errors */
+                interface->stopInterface(handle);
+            }
+        }
+        else {
+            interface->callback(handle, I2S_TRANSACTION_SUCCESS, transactionFinished);
+        }
     }
-    else {
-        interface->callback(handle, I2S_TRANSACTION_SUCCESS, transactionFinished);
+    else{
+        transactionFinished->bytesTransferred += transLength;
     }
 }
-
 
 /*
  *  ======== updateDataReadCPU ========
@@ -738,7 +814,9 @@ static void updateDataReadCPU(uintptr_t arg) {
 
                     handleCPUTransaction(handle, &transaction, &object->read);
 
-                    ptrValue = (uint32_t*)((uint32_t)transaction->bufPtr + (uint32_t)transaction->bytesTransferred);
+                    if(transaction != NULL){
+                        ptrValue = (uint32_t*)((uint32_t)transaction->bufPtr + (uint32_t)transaction->bytesTransferred);
+                    }
                 }
             }
 
@@ -750,7 +828,9 @@ static void updateDataReadCPU(uintptr_t arg) {
 
                     handleCPUTransaction(handle, &transaction, &object->read);
 
-                    ptrValue = (uint32_t*)((uint32_t)transaction->bufPtr + (uint32_t)transaction->bytesTransferred);
+                    if(transaction != NULL){
+                        ptrValue = (uint32_t*)((uint32_t)transaction->bufPtr + (uint32_t)transaction->bytesTransferred);
+                    }
                 }
             }
         }
@@ -792,8 +872,10 @@ static void updateDataWriteCPU(uintptr_t arg) {
 
                     handleCPUTransaction(handle, &transaction, &object->write);
 
-                    ptrValue = (uint32_t*)((uint32_t)transaction->bufPtr + (uint32_t)transaction->bytesTransferred);
-                    Value = *ptrValue;
+                    if(transaction != NULL){
+                        ptrValue = (uint32_t*)((uint32_t)transaction->bufPtr + (uint32_t)transaction->bytesTransferred);
+                        Value = *ptrValue;
+                    }
                 }
             }
 
@@ -805,8 +887,10 @@ static void updateDataWriteCPU(uintptr_t arg) {
 
                     handleCPUTransaction(handle, &transaction, &object->write);
 
-                    ptrValue = (uint32_t*)((uint32_t)transaction->bufPtr + (uint32_t)transaction->bytesTransferred);
-                    Value = *ptrValue;
+                    if(transaction != NULL){
+                        ptrValue = (uint32_t*)((uint32_t)transaction->bufPtr + (uint32_t)transaction->bytesTransferred);
+                        Value = *ptrValue;
+                    }
                 }
             }
         }
@@ -843,7 +927,11 @@ static void handleCPUTransaction(I2S_Handle handle,
                                                                         * it is potentially reused by the calling function */
 
         I2S_Transaction *newTransaction = *ptrTransaction;
-        if(List_next(&newTransaction->queueElement) == NULL) {
+        if(newTransaction == NULL){
+            /* It's too late for the user to queue new transactions: the hardware is already running out of data */
+            interface->stopInterface(handle);
+        }
+        else if(List_next(&newTransaction->queueElement) == NULL) {
             interface->callback(handle, I2S_ALL_TRANSACTIONS_SUCCESS, transaction);
         }
         else {
@@ -875,6 +963,9 @@ static bool initObject(I2S_Handle handle, I2S_Params *params) {
     object->samplingEdge         = params->samplingEdge;
     object->isMSBFirst           = params->isMSBFirst;
     object->samplingFrequency    = params->samplingFrequency;
+    object->dataShift            = (params->trueI2sFormat)? DATA_SHIFT_1 : DATA_SHIFT_NONE;
+    object->isLastReadTransfer   = (bool)false;
+    object->isLastWriteTransfer  = (bool)false;
 
     DebugP_assert(params->memorySlotLength == I2S_MEMORY_LENGTH_8BITS  ||
                   params->memorySlotLength == I2S_MEMORY_LENGTH_16BITS ||
@@ -882,15 +973,15 @@ static bool initObject(I2S_Handle handle, I2S_Params *params) {
                   params->memorySlotLength == I2S_MEMORY_LENGTH_32BITS   );
 
     if(!params->isDMAUnused){
-        if(object->memorySlotLength <= I2S_MEMORY_LENGTH_8BITS){
+        if(params->memorySlotLength <= I2S_MEMORY_LENGTH_8BITS){
             indexDmaConfig = 0;
             object->memorySlotLength = I2S_MEMORY_LENGTH_8BITS;
         }
-        else if(object->memorySlotLength <= I2S_MEMORY_LENGTH_16BITS){
+        else if(params->memorySlotLength <= I2S_MEMORY_LENGTH_16BITS){
             indexDmaConfig = 1;
             object->memorySlotLength = I2S_MEMORY_LENGTH_16BITS;
         }
-        else if(object->memorySlotLength <= I2S_MEMORY_LENGTH_32BITS){
+        else if(params->memorySlotLength <= I2S_MEMORY_LENGTH_32BITS){
             indexDmaConfig = 2;
             object->memorySlotLength = I2S_MEMORY_LENGTH_32BITS;
         }
@@ -992,19 +1083,21 @@ static bool initObject(I2S_Handle handle, I2S_Params *params) {
     }
 
     object->read.udmaConfig = dmaRxConfig[indexDmaConfig] | dmaArbConfig[indexDmaArbConfig];
+    object->read.stopInterface = I2S_stopRead;
     object->read.callback = params->readCallback;
     if((object->read.callback == NULL) && (object->noOfInputs != 0U)) {
         retVal = (bool)false;
     }
 
     object->write.udmaConfig = dmaTxConfig[indexDmaConfig] | dmaArbConfig[indexDmaArbConfig];
+    object->write.stopInterface = I2S_stopWrite;
     object->write.callback = params->writeCallback;
     if((object->write.callback == NULL) && (object->noOfOutputs != 0U)) {
         retVal = (bool)false;
     }
 
     object->errorCallback = params->errorCallback;
-    if((object->errorCallback == NULL)) {
+    if(object->errorCallback == NULL) {
         retVal = (bool)false;
     }
 
@@ -1159,7 +1252,6 @@ static void configSCK(I2S_Handle handle) {
                                                ((ulClkDiv             << 0)   & MCASP_ACLKRCTL_CLKRDIV_M));
     }
 
-
 }
 
 /*
@@ -1220,11 +1312,11 @@ static void configSerialFormat(I2S_Handle handle) {
 
         channelsToActivate = ((SD0->interfaceConfig == I2S_SD0_INPUT)? SD0->channelsUsed: 0x00) |
                              ((SD1->interfaceConfig == I2S_SD1_INPUT)? SD1->channelsUsed: 0x00);
-        HWREG(I2S_BASE + MCASP_O_RXFMT) = (  MCASP_RXFMT_RDATDLY_DEFAULT                                            |
-                                           ((object->isMSBFirst       << 15                 ) & MCASP_RXFMT_RRVRS ) |
-                                           ((dataLengthCC32XX         << MCASP_RXFMT_RSSZ_S ) & MCASP_RXFMT_RSSZ_M) |
-                                           ((object->isDMAUnused      << 3                  ) & MCASP_RXFMT_RBUSEL) |
-                                           ((object->sampleRotation   << MCASP_RXFMT_RROT_S ) & MCASP_RXFMT_RROT_M));
+        HWREG(I2S_BASE + MCASP_O_RXFMT) = (((object->dataShift        << MCASP_RXFMT_RDATDLY_S) & MCASP_RXFMT_RDATDLY_M)|
+                                           ((object->isMSBFirst       << 15                   ) & MCASP_RXFMT_RRVRS )   |
+                                           ((dataLengthCC32XX         << MCASP_RXFMT_RSSZ_S   ) & MCASP_RXFMT_RSSZ_M)   |
+                                           ((object->isDMAUnused      << 3                    ) & MCASP_RXFMT_RBUSEL)   |
+                                           ((object->sampleRotation   << MCASP_RXFMT_RROT_S   ) & MCASP_RXFMT_RROT_M));
         HWREG(I2S_BASE + MCASP_O_RXMASK) = object->sampleMask;
         HWREG(I2S_BASE + MCASP_O_RXTDM) = channelsToActivate;
     }
@@ -1232,11 +1324,11 @@ static void configSerialFormat(I2S_Handle handle) {
     /* Must be executed including in read-only mode */
     channelsToActivate = ((SD0->interfaceConfig == I2S_SD0_OUTPUT)? SD0->channelsUsed: 0x00) |
                          ((SD1->interfaceConfig == I2S_SD1_OUTPUT)? SD1->channelsUsed: 0x00);
-    HWREG(I2S_BASE + MCASP_O_TXFMT) = (  MCASP_TXFMT_XDATDLY_DEFAULT                                            |
-                                       ((object->isMSBFirst       << 15                 ) & MCASP_TXFMT_XRVRS ) |
-                                       ((dataLengthCC32XX         << MCASP_TXFMT_XSSZ_S ) & MCASP_TXFMT_XSSZ_M) |
-                                       ((object->isDMAUnused      << 3                  ) & MCASP_TXFMT_XBUSEL) |
-                                       ((object->sampleRotation   << MCASP_TXFMT_XROT_S ) & MCASP_TXFMT_XROT_M));
+    HWREG(I2S_BASE + MCASP_O_TXFMT) = (((object->dataShift        << MCASP_TXFMT_XDATDLY_S) & MCASP_TXFMT_XDATDLY_M)|
+                                       ((object->isMSBFirst       << 15                   ) & MCASP_TXFMT_XRVRS )   |
+                                       ((dataLengthCC32XX         << MCASP_TXFMT_XSSZ_S   ) & MCASP_TXFMT_XSSZ_M)   |
+                                       ((object->isDMAUnused      << 3                    ) & MCASP_TXFMT_XBUSEL)   |
+                                       ((object->sampleRotation   << MCASP_TXFMT_XROT_S   ) & MCASP_TXFMT_XROT_M));
     HWREG(I2S_BASE + MCASP_O_TXMASK) = object->sampleMask;
     HWREG(I2S_BASE + MCASP_O_TXTDM) = channelsToActivate;
 }

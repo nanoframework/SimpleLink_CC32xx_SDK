@@ -51,7 +51,6 @@ extern "C" {
 
 typedef signed int _SlFd_t;
 
-#define SL_TIMESTAMP_TICKS_IN_10_MILLISECONDS     (_u32)(10)
 #define SL_TIMESTAMP_MAX_VALUE                    (_u32)(0xFFFFFFFF)
 
 /*!
@@ -1190,6 +1189,16 @@ typedef signed int _SlFd_t;
 #define sl_Spawn(pEntry,pValue,flags)       os_Spawn(pEntry,pValue,flags)        
 #endif
 
+
+
+/*!
+    \brief  This function return the number of ticks in 10ms
+
+    \return Number of ticks in 10ms
+    \note
+    \warning
+*/
+#define SL_TIMESTAMP_TICKS_IN_10_MILLISECONDS     (10000/ClockP_getSystemTickPeriod())
 /*!
  *
  Close the Doxygen group.

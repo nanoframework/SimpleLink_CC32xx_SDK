@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2018, Texas Instruments Incorporated
+ * Copyright (C) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -89,7 +89,7 @@ static int32_t createSocket(uint32_t nwconnOpts,
         if (((nwconnOpts & MQTT_DEV_NETCONN_OPT_SKIP_DOMAIN_NAME_VERIFICATION) == 0) &&
             ((nwconnOpts & MQTT_DEV_NETCONN_OPT_URL) != 0))
         {
-            status = SlNetSock_secAttribSet(secAttrib, SLNETSOCK_SEC_ATTRIB_DOMAIN_NAME, (void *)serverAddr, strlen(serverAddr));
+            status = SlNetSock_secAttribSet(secAttrib, SLNETSOCK_SEC_ATTRIB_DOMAIN_NAME, (void *)serverAddr, (strlen(serverAddr) + 1));
             if (status < 0)
             {
                 SlNetSock_secAttribDelete(secAttrib);
@@ -140,7 +140,7 @@ static int32_t createSocket(uint32_t nwconnOpts,
         if (nwSecurityOpts->nFile == 1)
         {
             status = SlNetSock_secAttribSet(secAttrib, SLNETSOCK_SEC_ATTRIB_PEER_ROOT_CA,
-                                            (void *)nwSecurityOpts->files[0], strlen(nwSecurityOpts->files[0]));
+                                            (void *)nwSecurityOpts->files[0], (strlen(nwSecurityOpts->files[0]) + 1));
             if (status < 0)
             {
                 SlNetSock_secAttribDelete(secAttrib);
@@ -156,7 +156,7 @@ static int32_t createSocket(uint32_t nwconnOpts,
                 {
                     attribName = (SlNetSockSecAttrib_e)(SLNETSOCK_SEC_ATTRIB_PRIVATE_KEY + i);
                     status = SlNetSock_secAttribSet(secAttrib, attribName,
-                                                    (void *)nwSecurityOpts->files[i], strlen(nwSecurityOpts->files[i]));
+                                                    (void *)nwSecurityOpts->files[i], (strlen(nwSecurityOpts->files[i]) + 1));
                     if (status < 0)
                     {
                         SlNetSock_secAttribDelete(secAttrib);

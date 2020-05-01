@@ -29,6 +29,13 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/** ============================================================================
+ *  @file       I2SCC32XX.h
+ *
+ *  @brief      I2S driver implementation for a CC32XX I2S controller
+ *
+ *  ============================================================================
+ */
 #ifndef ti_drivers_i2s_I2SCC32XX__include
 #define ti_drivers_i2s_I2SCC32XX__include
 
@@ -49,13 +56,17 @@ extern "C" {
  *
  *  The bits in the pin mode macros are as follows:
  *  The lower 8 bits of the macro refer to the pin, offset by 1, to match
- *  driverlib pin defines.  For example, I2SCC32XX_PIN_02_McAFSX & 0xff = 1,
+ *  driverlib pin defines.  For example, I2SCC32XX_PIN_02_WS & 0xff = 1,
  *  which equals PIN_02 in driverlib pin.h.  By matching the PIN_xx defines in
  *  driverlib pin.h, we can pass the pin directly to the driverlib functions.
  *  The upper 8 bits of the macro correspond to the pin mux confg mode
  *  value for the pin to operate in the I2S mode.  For example, pin 2 is
- *  configured with mode 13 to operate as McAFSX.
+ *  configured with mode 13 to operate as WS.
+ *
+ *  The macro I2SCC32XX_PIN_UNUSED allows the user to not activate one
+ *  of the signal.
  */
+/*! @cond HIDDEN_DEFINES */
 #define I2SCC32XX_PIN_02_McAFSX  0x0d01 /*!< PIN 2 is used for McAFSX  */
 #define I2SCC32XX_PIN_03_McACLK  0x0302 /*!< PIN 3 is used for McCLK   */
 #define I2SCC32XX_PIN_15_McAFSX  0x070e /*!< PIN 15 is used for McAFSX */
@@ -75,25 +86,56 @@ extern "C" {
 #define I2SCC32XX_PIN_64_McAXR0  0x073f /*!< PIN 64 is used for McXR0  */
 #define I2SCC32XX_PIN_UNUSED     0xffff /*!< PIN non activated  */
 
-#define I2SCC32XX_PIN_50_SD1     I2SCC32XX_PIN_50_McAXR1
-#define I2SCC32XX_PIN_60_SD1     I2SCC32XX_PIN_60_McAXR1
-#define I2SCC32XX_PIN_52_SD0     I2SCC32XX_PIN_52_McAXR0
-#define I2SCC32XX_PIN_64_SD0     I2SCC32XX_PIN_64_McAXR0
-#define I2SCC32XX_PIN_45_SD0     I2SCC32XX_PIN_45_McAXR0
-#define I2SCC32XX_PIN_50_SD0     I2SCC32XX_PIN_50_McAXR0
-#define I2SCC32XX_PIN_03_SCK     I2SCC32XX_PIN_03_McACLK
-#define I2SCC32XX_PIN_52_SCK     I2SCC32XX_PIN_52_McACLK
-#define I2SCC32XX_PIN_53_SCK     I2SCC32XX_PIN_53_McACLK
-#define I2SCC32XX_PIN_62_SCKX    I2SCC32XX_PIN_62_McACLKX
-#define I2SCC32XX_PIN_02_WS      I2SCC32XX_PIN_02_McAFSX
-#define I2SCC32XX_PIN_15_WS      I2SCC32XX_PIN_15_McAFSX
-#define I2SCC32XX_PIN_17_WS      I2SCC32XX_PIN_17_McAFSX
-#define I2SCC32XX_PIN_21_WS      I2SCC32XX_PIN_21_McAFSX
-#define I2SCC32XX_PIN_45_WS      I2SCC32XX_PIN_45_McAFSX
-#define I2SCC32XX_PIN_63_WS      I2SCC32XX_PIN_63_McAFSX
-#define I2SCC32XX_PIN_53_WS      I2SCC32XX_PIN_53_McAFSX
+#define I2SCC32XX_PIN_50_SD1     I2SCC32XX_PIN_50_McAXR1   /*!< PIN 50 is used for SD1  */
+#define I2SCC32XX_PIN_60_SD1     I2SCC32XX_PIN_60_McAXR1   /*!< PIN 60 is used for SD1  */
+#define I2SCC32XX_PIN_52_SD0     I2SCC32XX_PIN_52_McAXR0   /*!< PIN 52 is used for SD0  */
+#define I2SCC32XX_PIN_64_SD0     I2SCC32XX_PIN_64_McAXR0   /*!< PIN 64 is used for SD0  */
+#define I2SCC32XX_PIN_45_SD0     I2SCC32XX_PIN_45_McAXR0   /*!< PIN 45 is used for SD0  */
+#define I2SCC32XX_PIN_50_SD0     I2SCC32XX_PIN_50_McAXR0   /*!< PIN 50 is used for SD0  */
+#define I2SCC32XX_PIN_03_SCK     I2SCC32XX_PIN_03_McACLK   /*!< PIN 03 is used for SCK  */
+#define I2SCC32XX_PIN_52_SCK     I2SCC32XX_PIN_52_McACLK   /*!< PIN 52 is used for SCK  */
+#define I2SCC32XX_PIN_53_SCK     I2SCC32XX_PIN_53_McACLK   /*!< PIN 53 is used for SCK  */
+#define I2SCC32XX_PIN_62_SCKX    I2SCC32XX_PIN_62_McACLKX  /*!< PIN 62 is used for SCKX */
+#define I2SCC32XX_PIN_02_WS      I2SCC32XX_PIN_02_McAFSX   /*!< PIN 02 is used for WS   */
+#define I2SCC32XX_PIN_15_WS      I2SCC32XX_PIN_15_McAFSX   /*!< PIN 15 is used for WS   */
+#define I2SCC32XX_PIN_17_WS      I2SCC32XX_PIN_17_McAFSX   /*!< PIN 17 is used for WS   */
+#define I2SCC32XX_PIN_21_WS      I2SCC32XX_PIN_21_McAFSX   /*!< PIN 21 is used for WS   */
+#define I2SCC32XX_PIN_45_WS      I2SCC32XX_PIN_45_McAFSX   /*!< PIN 45 is used for WS   */
+#define I2SCC32XX_PIN_63_WS      I2SCC32XX_PIN_63_McAFSX   /*!< PIN 63 is used for WS   */
+#define I2SCC32XX_PIN_53_WS      I2SCC32XX_PIN_53_McAFSX   /*!< PIN 53 is used for WS   */
 
-typedef struct I2SCC32XX_HWAttrs_ {
+/*! @endcond*/
+
+/*!
+ *  @brief  I2S Hardware attributes
+ *
+ *  intPriority is the I2S peripheral's interrupt priority, as defined by the
+ *  TI-RTOS kernel. This value is passed unmodified to Hwi_create().
+ *
+ *  pinSD1 and pinSD0 define the SD0 and SD1 data pin mapping, respectively.
+ *  pinSCK, pinMCLK and pinWS define the SCK, MCLK and WS clock pin mapping, respectively.
+ *  All these pins are typically defined with a macro in a header file, which maps to an IOID.
+ *
+ *  rxChannelIndex and txChannelIndex are uDMA channels respectively used for the read and
+ *  the write interface.
+ *
+ *  A sample structure is shown below:
+ *  @code
+ *  const I2SCC32XX_HWAttrs i2sCC3220SHWAttrs[CC3220S_LAUNCHXL_I2SCOUNT] = {
+ *      {
+ *        .pinSD1           =  I2SCC32XX_PIN_50_SD1,
+ *        .pinSD0           =  I2SCC32XX_PIN_64_SD0,
+ *        .pinSCK           =  I2SCC32XX_PIN_53_SCK,
+ *        .pinSCKX          =  I2SCC32XX_PIN_UNUSED,
+ *        .pinWS            =  I2SCC32XX_PIN_63_WS,
+ *        .rxChannelIndex   =  UDMA_CH4_I2S_RX,
+ *        .txChannelIndex   =  UDMA_CH5_I2S_TX,
+ *        .intPriority      =  0x40,
+ *      }
+ *  };
+ *  @endcode
+ */
+typedef struct {
     uint32_t                        pinSD1;                  /*!< Pin used for SD1 signal.
                                                                   Must be chosen between I2SCC32XX_PIN_50_SD1 and I2SCC32XX_PIN_60_SD1.
                                                                   Signal can be deactivated using I2SCC32XX_PIN_UNUSED. */
@@ -108,26 +150,43 @@ typedef struct I2SCC32XX_HWAttrs_ {
     uint32_t                        pinWS;                   /*!< Pin used for WS signal.
                                                                   Must be chosen between I2SCC32XX_PIN_02_WS, I2SCC32XX_PIN_15_WS, I2SCC32XX_PIN_17_WS, I2SCC32XX_PIN_21_WS, I2SCC32XX_PIN_45_WS, I2SCC32XX_PIN_53_WS, and I2SCC32XX_PIN_63_WS.
                                                                   This signal cannot be deactivated.*/
-    uint32_t                        rxChannelIndex;          /*! uDMA channel index used for Rx.
+    uint32_t                        rxChannelIndex;          /*!< uDMA channel index used for Rx.
                                                                   Must be chosen between UDMA_CH4_I2S_RX and UDMA_CH18_I2S_RX. Does not need to be set if no using the DMA transfers. */
-    uint32_t                        txChannelIndex;          /*! uDMA channel index used for Tx.
+    uint32_t                        txChannelIndex;          /*!< uDMA channel index used for Tx.
                                                                   Must be chosen between UDMA_CH5_I2S_TX and UDMA_CH19_I2S_TX. Does not need to be set if no using the DMA transfers. */
-    uint32_t                        intPriority;             /*! I2S Peripheral's interrupt priority */
+    uint32_t                        intPriority;             /*!< I2S Peripheral's interrupt priority */
 }I2SCC32XX_HWAttrs;
 
-typedef struct I2SCC32XX_DataInterface_ {
+/*!
+ *  @cond NODOC
+ *  I2S data-interface
+ *
+ *  This struct defines how the physical I2S interface (SD0/SD1) behaves.
+ *  Do not modify.
+ */
+typedef struct {
     I2S_DataInterfaceUse            interfaceConfig;          /*!< IN / OUT / UNUSED */
     I2S_ChannelConfig               channelsUsed;             /*!< List of the used channels. */
     uint8_t                         numberOfChannelsUsed;     /*!< Number of channels used on SDx. */
     uint8_t                         dataLine;                 /*!< DataLine used by SDx (I2S_DATA_LINE_0 or I2S_DATA_LINE_1) */
 }I2SCC32XX_DataInterface;
+/*! @endcond */
 
-typedef struct I2SCC32XX_Interface_ {
+/*!
+ *  @cond NODOC
+ *  I2S interface
+ *
+ *  This enum defines one of the interfaces (READ or WRITE) of the I2S module.
+ *  Do not modify.
+ */
+typedef struct {
     uint16_t                        delay;                    /*!< Number of WS cycles to wait before starting the first transfer. This value is mostly used when performing constant latency transfers. */
     I2S_Transaction                *activeTransfer;           /*!< Pointer on the ongoing transfer */
     I2S_Callback                    callback;                 /*!< Pointer to callback */
     uint32_t                        udmaConfig;               /*!< Bit field. It's a OR of  UDMA_SIZE_xx, UDMA_CHCTL_SRCINC_xx, UDMA_DSTINC_xx, UDMA_ARB_xx. */
+    I2S_StopInterface               stopInterface;            /*!< Pointer on the function used to stop the interface */
 }I2SCC32XX_Interface;
+/*! @endcond */
 
 /*!
  *  @brief      The definition of a function used by the I2S driver
@@ -138,7 +197,12 @@ typedef struct I2SCC32XX_Interface_ {
  */
 typedef void (*I2SCC32XX_FifoUpdate)(uintptr_t arg);
 
-typedef struct I2SCC32XX_Object_ {
+/*!
+ *  @cond NODOC
+ *  I2S Object.  The application must not access any member variables
+ *  of this structure!
+ */
+typedef struct {
 
     bool                            isOpen;                  /*!< To avoid multiple openings of the I2S. */
     bool                            invertWS;                /*!< WS inversion.
@@ -150,6 +214,16 @@ typedef struct I2SCC32XX_Object_ {
     bool                            isDMAUnused;             /*!< Selection between DMA transmissions and CPU transmissions.
                                                                           false: Transmission are performed by DMA.
                                                                           true:  Transmission are performed by CPU. */
+    volatile bool                   isLastReadTransfer;      /*!< This boolean indicates that no new DMA transfer must be started for the read interface.
+                                                                      The read interface will be stopped as soon as the current DMA transfer is finished.
+                                                                      This parameter is valid only in DMA mode. */
+    volatile bool                   isLastWriteTransfer;     /*!< This boolean indicates that no new DMA transfer must be started for the write interface.
+                                                                      The write interface will be stopped as soon as the current DMA transfer is finished.
+                                                                      This parameter is valid only in DMA mode. */
+    uint8_t                         dataShift;               /*!< When dataShift is set to 0, data are read/write on the data lines from the first SCK edge of the WS half-period.
+                                                                  By setting dataShift to a value different from zero, you can postpone the moment when data are read/write during the WS half-period.
+                                                                  For example, by setting dataShift to 1, data are read/write on the data lines from the second SCK period of the WS half-period. If no padding is activated, this corresponds to the I2S standard.
+                                                                  The only values possible for dataShift are DATA_SHIFT_NONE, DATA_SHIFT_1 and DATA_SHIFT_2 */
     uint8_t                         memorySlotLength;        /*!< Select the size of the memory used.
                                                                           I2S_MEMORY_LENGTH_8BITS  : Memory length is 8  bits.
                                                                           I2S_MEMORY_LENGTH_16BITS : Memory length is 16 bits.

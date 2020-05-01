@@ -539,13 +539,13 @@ static void sessWlMqpDispatch(MQTTClientMgmt_usr_t *usr)
             /* MQP is associated w/ other clients */
             cpy = MQTTServerUtil_mqpCopy(mqp);
 
-            /* use the copied mqp only for the specific client */
-            MQTTClientMgmt_mqpMapGet(cpy) = 0;
-
             if (NULL == cpy)
             {
                 continue;
             }
+
+            /* use the copied mqp only for the specific client */
+            MQTTClientMgmt_mqpMapGet(cpy) = 0;
         }
 
         /* Check if there is no more free space for publish messages */

@@ -43,7 +43,6 @@ int16_t  CdnDropboxV2_SendReqDir(int16_t SockId, uint8_t *pSendBuf, uint8_t *pSe
 int16_t  CdnDropboxV2_ParseRespDir(int16_t SockId, uint8_t *pRespBuf, OtaDirData_t *pOtaDirData);
 int16_t  CdnDropboxV2_SendReqFileUrl(int16_t SockId, uint8_t *pSendBuf, uint8_t *pServerName, uint8_t *pFileName, uint8_t *pVendorToken);
 int16_t  CdnDropboxV2_ParseRespFileUrl(uint16_t SockId, uint8_t *pRespBuf, uint8_t *pFileUrl, uint32_t FileUrlBufSize);
-int16_t  CdnDropboxV2_SendReqFileContent(int16_t SockId, uint8_t *pSendBuf, uint8_t *pFileServerName, uint8_t *pFileName);
 
 #ifdef  __cplusplus
 }

@@ -35,15 +35,12 @@
 
 #define Board_CC3220SF_LAUNCHXL
 
+#include <ti/drivers/Board.h>
+#include "CC3220SF_LAUNCHXL.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <ti/drivers/Board.h>
-
-#define Board_initGeneral()     Board_init()  /* deprecated */
-
-#include "CC3220SF_LAUNCHXL.h"
 
 #define Board_ADC0                   CC3220SF_LAUNCHXL_ADC0
 #define Board_ADC1                   CC3220SF_LAUNCHXL_ADC1

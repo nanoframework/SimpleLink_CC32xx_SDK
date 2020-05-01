@@ -199,7 +199,7 @@ extern "C" {
 /* \endcond */
 
 /*! @brief  Used to specify parking of a pin during LPDS */
-typedef struct PowerCC32XX_ParkInfo {
+typedef struct {
     uint32_t pin;
     /*!< The pin to be parked */
     uint32_t parkState;
@@ -207,7 +207,7 @@ typedef struct PowerCC32XX_ParkInfo {
 } PowerCC32XX_ParkInfo;
 
 /*! @brief Power global configuration */
-typedef struct PowerCC32XX_ConfigV1 {
+typedef struct {
     /*! Initialization function for the power policy */
     Power_PolicyInitFxn policyInitFxn;
     /*! The power policy function */
@@ -337,7 +337,7 @@ typedef struct PowerCC32XX_ConfigV1 {
  *  @cond NODOC
  *  NVIC registers that need to be saved before entering LPDS.
  */
-typedef struct PowerCC32XX_NVICRegisters {
+typedef struct {
     uint32_t vectorTable;
     uint32_t auxCtrl;
     uint32_t intCtrlState;
@@ -360,7 +360,7 @@ typedef struct PowerCC32XX_NVICRegisters {
  *  @cond NODOC
  *  MCU core registers that need to be save before entering LPDS.
  */
-typedef struct PowerCC32XX_MCURegisters {
+typedef struct {
     uint32_t msp;
     uint32_t psp;
     uint32_t psr;
@@ -375,7 +375,7 @@ typedef struct PowerCC32XX_MCURegisters {
  *  @cond NODOC
  *  Structure of context registers to save before entering LPDS.
  */
-typedef struct PowerCC32XX_SaveRegisters {
+typedef struct {
     PowerCC32XX_MCURegisters m4Regs;
     PowerCC32XX_NVICRegisters nvicRegs;
 } PowerCC32XX_SaveRegisters;
@@ -481,7 +481,7 @@ typedef enum {
  *  should fill a structure of this type, and pass it as the parameter
  *  to PowerCC32XX_configureWakeup() to specify the new wakeup settings.
  */
-typedef struct PowerCC32XX_Wakeup {
+typedef struct {
     /*! Enable GPIO as a wakeup source for LPDS */
     bool enableGPIOWakeupLPDS;
     /*! Enable GPIO as a wakeup source for shutdown */
@@ -555,7 +555,7 @@ typedef struct PowerCC32XX_Wakeup {
  *  @cond NODOC
  *  Internal structure defining Power module state.
  */
-typedef struct PowerCC32XX_ModuleState {
+typedef struct {
     List_List notifyList;
     uint32_t constraintMask;
     uint32_t state;

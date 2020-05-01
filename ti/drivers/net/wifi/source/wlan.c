@@ -752,12 +752,10 @@ _i16 sl_WlanProfileGet(const _i16 Index,_i8*  pName, _i16 *pNameLen, _u8 *pMacAd
 
         *pNameLen  = (_i16)(Msg.Rsp.Args.Common.SsidLen);      
         *pPriority = Msg.Rsp.Args.Common.Priority;       
-
-        if (NULL != Msg.Rsp.Args.Common.Bssid)
+        if (NULL != pMacAddr)
         {
             sl_Memcpy(pMacAddr, Msg.Rsp.Args.Common.Bssid, sizeof(Msg.Rsp.Args.Common.Bssid));
         }
-
         sl_Memset(pName, 0, SL_WLAN_SSID_MAX_LENGTH);
         sl_Memcpy(pName, EAP_PROFILE_SSID_STRING(&Msg), *pNameLen);
     }

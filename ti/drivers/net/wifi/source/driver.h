@@ -326,7 +326,7 @@ typedef struct SlSelectEntry_t
     _u32                        TimeStamp;
     _u16                        readlist;
     _u16                        writelist;
-    _u8                         ObjIdx;
+    _i16                         ObjIdx;
 }_SlSelectEntry_t;
 
 typedef struct _SlMultiSelectCB_t

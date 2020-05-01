@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2012-2019 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,10 +54,18 @@ static const char *HTTP_VER             = "HTTP/1.1";
  *  HTTP/1.1 NNN Explanation\r\n
  *  Content-type: some-mime-type\r\n
  *
- *  Currently, "Explanation" is max 18 char, so 33 for status line
+ *  Currently, "Explanation" is max 22 char, so 37 for status line
  *  "Content-type: " and some-mime-type, assume 100 or less char.
  */
 #define MAXRESPONSESIZE  100
+
+/*
+ *  Max size of the "Failed: NNN STATUS TEXT" message sent in
+ *  HTTPServer_sendErrorResponse, i.e.
+ *
+ *  "Failed: 401 Authorization Required"
+ */
+#define MAXFAILUREMSGSIZE 35
 
 typedef struct StatusMap {
     int  status;
@@ -153,8 +161,8 @@ void HTTPServer_sendErrorResponse(int s, int status)
     /* send a default response if there is no user callback */
     if (!HTTPServer_errorResponseHook ||
             !HTTPServer_errorResponseHook(s, status)) {
-        char buf[33];  /* max failure message - TODO should be #define */
         int len;
+        char buf[MAXFAILUREMSGSIZE];
 
         len = snprintf(buf, sizeof(buf), "Failed: %d %s", status,
                         getStatusMessage(status));

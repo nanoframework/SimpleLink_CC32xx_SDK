@@ -72,10 +72,6 @@
 #ifndef ti_drivers_sd_SDHostCC32XX__include
 #define ti_drivers_sd_SDHostCC32XX__include
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdint.h>
 #include <ti/drivers/SD.h>
 
@@ -84,6 +80,10 @@ extern "C" {
 #include <ti/drivers/Power.h>
 #include <ti/drivers/power/PowerCC32XX.h>
 #include <ti/drivers/dma/UDMACC32XX.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define SDHostCC32XX_PIN_06_SDCARD_DATA  0x0805
 #define SDHostCC32XX_PIN_07_SDCARD_CLK   0x0806
@@ -130,7 +130,7 @@ extern const SD_FxnTable sdHostCC32XX_fxnTable;
  *  };
  *  @endcode
  */
-typedef struct SDHostCC32XX_HWAttrsV1 {
+typedef struct {
     /*! SD interface clock rate */
     uint_fast32_t clkRate;
 
@@ -161,7 +161,7 @@ typedef struct SDHostCC32XX_HWAttrsV1 {
  *
  *  The application must not access any member variables of this structure!
  */
-typedef struct SDHostCC32XX_Object {
+typedef struct {
     /* Relative Card Address */
     volatile uint32_t     rca;
     /* Number of sectors written */

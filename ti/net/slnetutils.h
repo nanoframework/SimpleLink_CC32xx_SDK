@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -351,7 +351,8 @@ int SlNetUtil_inetAton(const char *str, struct SlNetSock_InAddr_t *addr);
                                  - #SLNETSOCK_AF_INET for network address IPv4
                                  - #SLNETSOCK_AF_INET6 for network address IPv6
     \param[in]  binaryAddr     Pointer to an IP address structure indicating the
-                               address in binary representation
+                               address in binary representation. The address
+                               is assumed to be in network-byte order
     \param[out] strAddr        Pointer to the address string representation
                                for IPv4 or IPv6 according to the address
                                family
@@ -390,11 +391,11 @@ const char *SlNetUtil_inetNtop(int16_t addrFamily, const void *binaryAddr, char 
                                For example:
                                  - #SLNETSOCK_AF_INET for network address IPv4
                                  - #SLNETSOCK_AF_INET6 for network address IPv6
-    \param[out] strAddr        Specifies the IP address in string representation
-                               for IPv4 or IPv6 according to the address
-                               family
-    \param[in]  binaryAddr     Pointer to an address structure that will be
-                               filled by the IP address in Binary representation
+    \param[in]  strAddr        Specifies the IP address in string representation
+                               for IPv4 or IPv6 according to the address family
+    \param[out] binaryAddr     Pointer to an address structure that will be
+                               filled by the IP address in Binary representation.
+                               The address is returned in network-byte order
 
     \return                    1 on success, -1 on failure, or 0 if the input
                                isn't a valid IP address

@@ -35,7 +35,7 @@
  *
  *  @anchor ti_drivers_Capture_Overview
  *  # Overview
- *  
+ *
  *  The capture driver is used to detect and time edge triggered events on a
  *  GPIO pin.
  *
@@ -74,7 +74,7 @@
  *  params.callbackFxn = someCaptureCallbackFunction;
  *  params.periodUnit = Capture_PERIOD_US;
  *
- *  handle = Capture_open(Board_CAPTURE0, &params);
+ *  handle = Capture_open(CONFIG_CAPTURE0, &params);
  *
  *  if (handle == NULL) {
  *      //Capture_open() failed
@@ -111,7 +111,7 @@
  *  params.callbackFxn = someCaptureCallbackFunction;
  *  params.periodUnit = Capture_PERIOD_US;
  *
- *  handle = Capture_open(Board_CAPTURE0, &params);
+ *  handle = Capture_open(CONFIG_CAPTURE0, &params);
  *
  *  if (handle == NULL) {
  *      //Capture_open() failed
@@ -182,7 +182,7 @@ extern "C"
  * Capture_control() returns Capture_STATUS_UNDEFINEDCMD if the control code is
  * not recognized by the driver implementation.
  */
-#define Capture_STATUS_UNDEFINEDCMD    (-2)
+#define Capture_STATUS_UNDEFINEDCMD     (-2)
 
 /*!
  *  @brief      A handle that is returned from a Capture_open() call.
@@ -195,12 +195,21 @@ typedef struct Capture_Config_ *Capture_Handle;
  *
  *  This enum defines the capture modes that may be specified in
  *  #Capture_Params.
+ *
+ *  Some modes are not available on all devices. Check the device specific
+ *  implementations to see which modes are allowed.
  */
 typedef enum {
     Capture_RISING_EDGE,     /*!< Capture is triggered on rising edges. */
     Capture_FALLING_EDGE,    /*!< Capture is triggered on falling edges. */
-    Capture_ANY_EDGE         /*!< Capture is triggered on both rising and
+    Capture_ANY_EDGE,         /*!< Capture is triggered on both rising and
                                   falling edges. */
+    Capture_RISING_EDGE_FALLING_EDGE,  /*!< Start capture is triggered on rising
+                                            edge and stop capture is triggered
+                                            on falling edge */
+    Capture_FALLING_EDGE_RISING_EDGE,  /*!< Start capture is triggered on
+                                            falling edge and stop capture is
+                                            triggered on rising edge */
 } Capture_Mode;
 
 /*!
@@ -213,8 +222,9 @@ typedef enum {
     Capture_PERIOD_US,       /*!< Period specified in micro seconds. */
     Capture_PERIOD_HZ,       /*!< Period specified in hertz; interrupts per
                                   second. */
-    Capture_PERIOD_COUNTS    /*!< Period specified in timer ticks. Varies
+    Capture_PERIOD_COUNTS,    /*!< Period specified in timer ticks. Varies
                                   by board. */
+    Capture_PERIOD_NS,       /*!< Period specified in nano seconds. */
 } Capture_PeriodUnits;
 
 
@@ -228,9 +238,11 @@ typedef enum {
  *  @param[in]  handle         Capture_Handle
  *
  *  @param[in]  interval       Interval of two triggering edges in
- *                         #Capture_PeriodUnits
+ *                             #Capture_PeriodUnits
+ *  @param[in]  status         Status of Capture interrupt
  */
-typedef void (*Capture_CallBackFxn)(Capture_Handle handle, uint32_t interval);
+typedef void (*Capture_CallBackFxn)(Capture_Handle handle, uint32_t interval,
+                                    int_fast16_t status);
 
 /*!
  *  @brief Capture Parameters

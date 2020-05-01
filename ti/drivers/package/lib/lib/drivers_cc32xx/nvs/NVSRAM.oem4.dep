@@ -1,0 +1,21 @@
+package/lib/lib/drivers_cc32xx/./nvs/NVSRAM.oem4: nvs/NVSRAM.c /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdbool.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdint.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/string.h /vagrant/Q1_eng_19.3.20/sdk_root/source/ti/drivers/dpl/HwiP.h /vagrant/Q1_eng_19.3.20/sdk_root/source/ti/drivers/dpl/SemaphoreP.h /vagrant/Q1_eng_19.3.20/sdk_root/source/ti/drivers/NVS.h /vagrant/Q1_eng_19.3.20/sdk_root/source/ti/drivers/nvs/NVSRAM.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_stdint40.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/stdint.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_ti_config.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/cdefs.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/xlocale/_string.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stddef.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_types.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_stdint.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_stdint.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/linkage.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_types.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_limits.h 
+nvs/NVSRAM.c:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdbool.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdint.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/string.h:
+/vagrant/Q1_eng_19.3.20/sdk_root/source/ti/drivers/dpl/HwiP.h:
+/vagrant/Q1_eng_19.3.20/sdk_root/source/ti/drivers/dpl/SemaphoreP.h:
+/vagrant/Q1_eng_19.3.20/sdk_root/source/ti/drivers/NVS.h:
+/vagrant/Q1_eng_19.3.20/sdk_root/source/ti/drivers/nvs/NVSRAM.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_stdint40.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/stdint.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_ti_config.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/cdefs.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/xlocale/_string.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stddef.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_types.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_stdint.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_stdint.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/linkage.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_types.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_limits.h:

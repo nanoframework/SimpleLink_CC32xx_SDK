@@ -221,7 +221,7 @@ extern "C" {
 #define HTTPClient_EGETOPTBUFSMALL                       (-3002)
 
 /*!
- *  @brief Response recieved from the server is not a valid HTTP/1.1 or HTTP/1.0 response
+ *  @brief Response received from the server is not a valid HTTP/1.1 or HTTP/1.0 response
  */
 #define HTTPClient_ERESPONSEINVALID                      (-3003)
 
@@ -352,6 +352,23 @@ extern "C" {
  */
 #define HTTPClient_ECANTCREATESECATTRIB                  (-3022)
 
+/*!
+ *  @brief General internal error 
+ *
+ *  Error occured during processing in the HTTP Client library
+ */
+#define HTTPClient_EINTERNAL                             (-3023)
+
+/*!
+ *  @brief Buffer inserted into HTTPClient_getHeaderByName(..) is not big enough.
+ */
+#define HTTPClient_EGETCUSOMHEADERBUFSMALL               (-3024)
+
+/*!
+ *  @brief Custom response header name on HTTPClient_getHeaderByName(..) dosn't set before.
+ */
+#define HTTPClient_ENOHEADERNAMEDASINSERTED              (-3025)
+
 /* HTTPClient_connect flags */
 /** If proxy is set, this flag makes the connection without the proxy */
 #define HTTPClient_IGNORE_PROXY                (0x01)
@@ -365,6 +382,13 @@ extern "C" {
 
 /** Header Field added is persistent */
 #define HTTPClient_HFIELD_PERSISTENT           (0x02)
+
+/* HTTPClient_setHeaderByName 'option' flag */
+/** Header Field for add or remove custom response header on setHeaderByName */
+#define HTTPClient_CUSTOM_RESPONSE_HEADER      (0x01)
+
+
+/** Header field indicate of remove requested name header */
 
 /* HTTPClient_sendRequest flags */
 /** Sets the client's request state into chunked body */
@@ -440,19 +464,48 @@ int16_t HTTPClient_destroy(HTTPClient_Handle client);
 
 /*!
     \brief  Open a connection to an HTTP server.
-            A user can connect to a HTTP server using TLS,proxy or both.
+            A user can connect to a HTTP server using TLS, proxy or both.
+            HTTPClient_connect2 allows the user more control over security by
+            accepting a secure attribute object and returning the value of the
+            attempted secure connection.
 
     \param[in]  client         Instance of an HTTP client
 
     \param[in]  hostName       IP address or URL of the HTTP server.
 
-    \param[in]  exSecParams    external parameters for configuring security.
+    \param[in]  secAttribs     A secure attributes object for configuring security.
+
+    \param[in]  flags          Special flags for connection:
+                               - #HTTPClient_IGNORE_PROXY -  Ignore the proxy even if set.
+                               - #HTTPClient_HOST_EXIST   -  Host header was added manually, HTTPClient_connect() won't
+                                                             add host internally.
+    \param[out] secureRetVal   Optional - If an error occurred while establishing
+                               a secure connection, the error code will be contained
+                               here. NULL should be passed if this is not desired.
+
+    \return 0 on success or error code on failure.
+
+    \sa         HTTPClient_connect()
+ */
+int16_t HTTPClient_connect2(HTTPClient_Handle client, const char *hostName, SlNetSockSecAttrib_t *secAttribs, uint32_t flags, int16_t *secureRetVal);
+
+/*!
+    \brief  Open a connection to an HTTP server.
+            A user can connect to a HTTP server using TLS, proxy or both.
+
+    \param[in]  client         Instance of an HTTP client
+
+    \param[in]  hostName       IP address or URL of the HTTP server.
+
+    \param[in]  exSecParams    Optional - External parameters for configuring security.
 
     \param[in]  flags          Special flags for connection:
                                - #HTTPClient_IGNORE_PROXY -  Ignore the proxy even if set.
                                - #HTTPClient_HOST_EXIST   -  Host header was added manually, HTTPClient_connect() won't
                                                              add host internally.
     \return 0 on success or error code on failure.
+
+    \sa         HTTPClient_connect2()
  */
 int16_t HTTPClient_connect(HTTPClient_Handle client, const char *hostName, HTTPClient_extSecParams *exSecParams, uint32_t flags);
 
@@ -539,7 +592,7 @@ int16_t HTTPClient_readResponseBody(HTTPClient_Handle client, char *body, uint32
     \param[in]     option   Options for setting could be one of the following:
                              -Header-Fields ID -
                                  Request -  headers - sets the headers-fields which will be used in requests.
-                                 Response - headers - sets the headers-fields wanted to be filtered in a response.
+                                 Response - headers - sets the headers-fields wanted to be un-filtered in a response.
                                                   (if no request headers are set, all the headers will be available with
                                                    size constraints)
 
@@ -561,7 +614,7 @@ int16_t HTTPClient_setHeader(HTTPClient_Handle client, uint32_t option, void *va
     \brief  Setting HTTP Client Header-field configurations by header name.
             Both standard (as defined by the HTTP RFC spec) and non-standard
             header names are supported.
-            This API currently only supports request headers.
+            This API supports request and response headers.
 
             When a given standard HTTP header is set, it is important to
             consistently set it using one of HTTPClient_setHeaderByName() or
@@ -571,18 +624,27 @@ int16_t HTTPClient_setHeader(HTTPClient_Handle client, uint32_t option, void *va
     \param[in]     client   Instance of an HTTP client
 
     \param[in]     option   Options for setting could be one of the following:
-                                 HTTPClient_REQUEST_HEADER_MASK - sets a header-field which will be used in requests.
-
+                            #HTTPClient_REQUEST_HEADER_MASK - sets a header-field which will be used in requests.
+                            #HTTPClient_CUSTOM_RESPONSE_HEADER  - sets a header-field which will be used when HTTP response retrieve. This option need to be used when
+                            the user want to store custom response header by name.
     \param[in]     name     Name of header. Must be NULL-terminated.
 
-    \param[in]     value    Value for setting could be any related value for
+    \param[in]     value    On request - Value for setting could be any related value for
                             the corresponding header.
+                            On response - Must be NULL.
 
-    \param[in]     len      Length of the value.
+    \param[in]     len      On request - Length of the value.
+                            On response - Must be 0.
 
-    \param[in]     flags    Flags for settings need be one of the following:
-                              - #HTTPClient_HFIELD_NOT_PERSISTENT - Header-Field is not persistent.
-                              - #HTTPClient_HFIELD_PERSISTENT - Header-Field is persistent.
+    \param[in]     flags    On request - Flags for settings need be one of the following:
+                                       - #HTTPClient_HFIELD_NOT_PERSISTENT - Header-Field is not persistent.
+                                       - #HTTPClient_HFIELD_PERSISTENT - Header-Field is persistent.
+                            On response - Flags should be 0.
+                                          Currently, HTTP custom response header only supports persistent mode.
+                                          No option right now, to set a custom response header for single request and clear it after the first response,
+                                          not by sign it as non-persistent and not by clear it after one use.
+                                          For clear custom response header after set only close the HTTPClient connection by "HTTPClient_destroy",
+                                          and open a new one.
 
     \return 0 on success or error code on failure.
  */
@@ -595,7 +657,7 @@ int16_t HTTPClient_setHeaderByName(HTTPClient_Handle client, uint32_t option, co
 
     \param[in]     option   Options for getting could be one of the following:
                             -Header-Fields ID
-                                Response - headers - getting response headers-field value (only if value was received in a filtered response).
+                            -Response - headers - getting response headers-field value (only if value was set previously, and asked to be stored using another HTTPClient API).
 
     \param[out]    value    Value for getting, could be any related value for
                             the corresponding option.
@@ -610,7 +672,32 @@ int16_t HTTPClient_setHeaderByName(HTTPClient_Handle client, uint32_t option, co
 int16_t HTTPClient_getHeader(HTTPClient_Handle client, uint32_t option, void *value, uint32_t *len, uint32_t flags);
 
 /*!
-    \brief  Setting HTTP Client configurations.
+    \brief  Getting HTTP Client Header-field configurations.
+            This API doesn't support removing existing custom header name, to do so please close the HTTPClient and reallocate it.
+            This API for now, supports only custom 'response' headers.
+
+    \param[in]     client   Instance of an HTTP client.
+                            'client' - cannot be NULL.
+
+    \param[in]     option   Options for getting could be one of the following:
+
+                            -Response - headers - getting custom response headers-field value (only if value was set previously and asked to be stored using HTTPClient_setHeaderByName).
+                            #HTTPClient_CUSTOM_RESPONSE_HEADER
+
+    \param[in]     name     Should contain the requested custom response header name for retrieve the appropriate value stored on the last HTTP response.
+                            'name' cannot be NULL.
+    \param[out]    value    Pointer value for store the appropriate value on the last HTTP response respectively to requested 'name' -  will be copied into the pointer.
+                            'value' cannot be NULL.
+
+    \param[inout]  len      Inputs Length of the value buffer size and output the actual inserted custom response header value length.
+                            'len' cannot be 0.
+    \param[in]     flags    Flags for getting special configurations - right now not in use.
+
+    \return 0 on success or error code on failure.
+ */
+int16_t HTTPClient_getHeaderByName(HTTPClient_Handle client, uint32_t option, const char* name, void *value, uint32_t *len ,uint32_t flags);
+/*!
+    \brief         Setting HTTP Client configurations.
 
     \param[in]     client   Instance of an HTTP client
 
@@ -654,9 +741,27 @@ int16_t HTTPClient_setOpt(HTTPClient_Handle client, uint32_t option, void *value
 int16_t HTTPClient_getOpt(HTTPClient_Handle client, uint32_t option, void *value, uint32_t *len ,uint32_t flags);
 
 /*!
-    \brief Set the proxy address
+    \brief Uses the http CONNECT method to create a tunnel through a remote proxy server to the host designated in HTTPClient_connect
 
-    \param[in]  addr IP address of the proxy server
+    \param[in]  addr    Pointer to SlNetSock_Addr_t struct containing ip and port number of proxy server
+
+    \return             none
+
+    \code
+        uint32_t ipAddress;
+        uint16_t portNumber = ####; //Proxy server port
+        char strip[] = "###.###.###.###"; //Proxy server address
+        SlNetUtil_inetPton(SLNETSOCK_AF_INET, strip, &ipAddress); //Function transform address string into binary
+        SlNetSock_Addr_t    *sa;
+        SlNetSock_AddrIn_t sAddr;
+        sAddr.sin_family = SLNETSOCK_AF_INET;
+        sAddr.sin_port = SlNetUtil_htons((unsigned short)portNumber);
+        sAddr.sin_addr.s_addr = (unsigned int)ipAddress;
+        sa = (SlNetSock_Addr_t*)&sAddr; //HTTPClient_setProxy() expects a SlNetSock_Addr_t, but the input
+                                       //is treated like a SlNetSock_AddrIn_t when the socket is created
+        HTTPClient_setProxy(sa);
+    \endcode
+
  */
 void HTTPClient_setProxy(const SlNetSock_Addr_t *addr);
 

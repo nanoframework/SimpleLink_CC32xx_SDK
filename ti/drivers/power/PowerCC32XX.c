@@ -679,6 +679,15 @@ int_fast16_t Power_sleep(uint_fast16_t sleepState)
             return (status);
         }
 
+        /* indicate to the MAC layer through register that the 
+           APPS layer is going to sleep this is needed because 
+           the MAC cannot do DC2DC clock sync when the application 
+           processor waking up from sleep and running through its 
+           ROM bootloader because it is also touching the DC2DC 
+           of the top die FLASH                                */
+        
+        HWREG(OCP_SHARED_BASE + OCP_SHARED_O_ALT_PC_VAL_APPS) = 1;
+
         DebugP_log1("Power: sleep, sleepState (%d)", sleepState);
 
         /* invoke specific sequence to activate LPDS ...*/
@@ -755,6 +764,10 @@ int_fast16_t Power_sleep(uint_fast16_t sleepState)
 
         /* set transition state to EXITING_SLEEP */
         PowerCC32XX_module.state = Power_EXITING_SLEEP;
+
+        /* indicate to the MAC layer that the application processor is
+           up and running                                             */
+        HWREG(OCP_SHARED_BASE + OCP_SHARED_O_ALT_PC_VAL_APPS) = 0;
 
         /*
          * signal clients registered for post-sleep notification; for example,

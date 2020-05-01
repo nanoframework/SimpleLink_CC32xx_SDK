@@ -886,7 +886,7 @@ static int32_t bufUTF8WrTry(uint8_t *buf, uint32_t fsz, const MQTT_UTF8String_t 
 {
     uint8_t *ref = buf;
 
-    if (fsz < (topic->length + 2 + (QFL_VALUE == qid) ? 0 : 1))
+    if (fsz < (topic->length + 2 + ((QFL_VALUE == qid) ? 0 : 1)))
     {
         return MQTT_PACKET_ERR_PKT_LEN; /* No buf */
     }
@@ -2161,7 +2161,7 @@ int32_t MQTTClientCore_initLib(const MQTTClientCore_LibCfg_t *lib_cfg_local)
 {
     if (NULL == lib_cfg_local)
     {
-
+        return -1;
     }
     if (ModuleState_InitDone == MQTTClientCore_clLibState)
     {

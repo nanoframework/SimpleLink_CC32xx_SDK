@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -236,11 +236,11 @@ int32_t SlNetIf_init(int32_t flags);
                                which defined in slnetif.h
     \param[in] ifName          Specifies the name of the interface,
                                \b Note: Can be set to NULL, but when set to NULL
-                                     cannot be used with SlNetIf_getIDByName
+                                     cannot be used with SlNetIf_getIDByName()
     \param[in] ifConf          Specifies the function list for the
                                interface
-    \param[in] priority        Specifies the priority needs to be
-                               set (In ascending order).
+    \param[in] priority        Specifies the priority of the interface
+                               (In ascending order).
                                Note: maximum priority is 15
 
     \return                    Zero on success, or negative error code on failure
@@ -531,43 +531,85 @@ int32_t SlNetIf_getIPAddr(uint16_t ifID, SlNetIfAddressType_e addrType, uint16_t
 
 
 /*!
-    \brief Load secured buffer to the network stack
+    \brief Load/unload/replace a secure object into a network interface/stack
 
-    The SlNetSock_secLoadObj function loads buffer/files into the inputted
-    network stack for future usage of the socket SSL/TLS connection.
-    This option is relevant for network stacks with file system and also for
-    network stacks that lack file system that can store the secured files.
+    SlNetIf_loadSecObj() loads a named secure object into specific
+    network stack for future use by secure sockets. To unload the
+    named secure object, pass a NULL object buffer with the
+    appropriate name.
 
-    \param[in] objType          Specifies the security object type which
-                                could be one of the following:\n
+    \param[in] objType          The secure object type:
                                    - #SLNETIF_SEC_OBJ_TYPE_RSA_PRIVATE_KEY
                                    - #SLNETIF_SEC_OBJ_TYPE_CERTIFICATE
                                    - #SLNETIF_SEC_OBJ_TYPE_DH_KEY
-    \param[in] objName          Specifies the name/input identifier of the
-                                secured buffer loaded
-                                for file systems - this can be the file name
-                                for plain text buffer loading this can be the
-                                name of the object
-    \param[in] objNameLen       Specifies the buffer name length to be loaded.\n
-    \param[in] objBuff          Specifies the pointer to the secured buffer to
-                                be loaded.\n
-    \param[in] objBuffLen       Specifies the buffer length to be loaded.\n
-    \param[in] ifBitmap         Specifies the interfaces which the security
-                                objects needs to be added to.\n
-                                The values of the interface identifiers
-                                is defined with the prefix SLNETIF_ID_
-                                which defined in slnetif.h
+    \param[in] objName          The secure object name
+    \param[in] objNameLen       The secure object name length
+    \param[in] objBuff          The secure object buffer to be loaded, or
+                                NULL if the named object is to be unloaded
+    \param[in] objBuffLen       The secure object buffer length
+    \param[in] ifBitmap         The interfaces which the secure
+                                objects should be loaded to
 
-    \return                     On success, buffer type handler index to be
-                                used when attaching the secured buffer to a
-                                socket.\n
-                                A successful return code should be a positive
-                                number (int16)\n
-                                On error, a negative value will be returned
-                                specifying the error code.
-                                - #SLNETERR_STATUS_ERROR - load operation failed
+    \remark     Loaded secure objects are added to secure attributes using
+                the SlNetSock_secAttribCreate(),
+                SlNetSock_secAttribSet(), and
+                SlNetSock_secAttribDelete() lifecycle APIs.  The
+                loading/unloading of secure objects (via
+                SlNetIf_loadSecObj()) must be done while the secure
+                object is not associated with any existing secure
+                attributes.  Restating, you must delete any existing
+                secure attributes before changing any secure objects
+                associated with them.
 
-    \sa                         SlNetSock_setOpt()
+    \remark     The values of @c ifBitmap typically have the prefix
+                @c SLNETIF_ID_.
+
+    \remark     SlNetIf_loadSecObj() internally validates the @c objName,
+                @c objNameLen, and @c objType arguments, so the
+                underlying interface/stack functions do not need to
+                check them again.
+
+    \remark     For stacks that use file systems (e.g. CC3XXX), @c objName
+                will be the file name used on the file system.
+
+    \remark     Note that ownership of @c objBuff after returning from
+                SlNetIf_loadSecObj() varies by stack/interface, often
+                depending on how the underlying stack implements it's
+                TLS support.
+                  - On CC3XXX-based stacks, the TLS support is managed
+                    on a separate network processor, and loading a
+                    secure object results in persisting the secure
+                    object to a file system.  As a result, after
+                    successfully calling SlNetIf_loadSecObj(), the @c
+                    objBuff is no longer needed, and can be considered
+                    "owned" by the application.
+
+                  - On NDK-based stacks, the TLS support is typically
+                    managed by a software library like mbedTLS.  As a
+                    result, only a reference to @c objBuff is made
+                    within the SlNetIf_loadSecObj() call, and the
+                    buffer must persist as long as the secure object
+                    remains loaded.  Ownership of the buffer returns
+                    to the user only after unloading the secure
+                    object (or resetting the device).
+
+    \remark     To replace an existing named secure object with another
+                secure object of the same name, call
+                SlNetIf_loadSecObj() with the same @c objName.
+                Resources associated with the previously loaded secure
+                object will be released and replaced by the new secure
+                object.
+
+    \remark     When unloading a named secure object, @c objBuffLen is
+                ignored.
+
+    \return     0 on success, negative on failure.  Common errors include:
+                   - #SLNETERR_RET_CODE_INVALID_INPUT
+                   - #SLNETERR_RET_CODE_NO_FREE_SPACE
+                   - #SLNETERR_RET_CODE_MALLOC_ERROR
+
+    \sa         SlNetSock_setOpt()
+    \sa         SlNetSock_secAttribSet()
 
     \slnetif_not_threadsafe
 

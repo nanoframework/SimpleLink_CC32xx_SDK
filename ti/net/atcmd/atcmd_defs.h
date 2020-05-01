@@ -90,10 +90,10 @@ extern StrMpl_List_t ATCmd_devStatusDevice[1];
 extern StrMpl_List_t ATCmd_devStatusBsd[1];
 extern StrMpl_List_t ATCmd_devStatusNetapp[8];
 
-extern StrMpl_List_t ATCmd_wlanSecurity[7];
-extern StrMpl_List_t ATCmd_wlanScanSecurity[5];
-extern StrMpl_List_t ATCmd_wlanScanCipher[5];
-extern StrMpl_List_t ATCmd_wlanScanKeyMgmt[3];
+extern StrMpl_List_t ATCmd_wlanSecurity[9];
+extern StrMpl_List_t ATCmd_wlanScanSecurity[6];
+extern StrMpl_List_t ATCmd_wlanScanCipher[6];
+extern StrMpl_List_t ATCmd_wlanScanKeyMgmt[5];
 extern StrMpl_List_t ATCmd_wlanEap[9];
 extern StrMpl_List_t ATCmd_wlanPolicy[4];
 extern StrMpl_List_t ATCmd_wlanConnPolicy[4];

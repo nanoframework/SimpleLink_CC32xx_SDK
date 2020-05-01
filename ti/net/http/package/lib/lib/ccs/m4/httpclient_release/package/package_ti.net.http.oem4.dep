@@ -1,0 +1,22 @@
+package/lib/lib/ccs/m4/httpclient_release/package/package_ti.net.http.oem4: package/package_ti.net.http.c /opt/ti/xdctools_3_61_00_16_core/packages/xdc/std.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdarg.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stddef.h /vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/ti/targets/arm/elf/std.h /vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/ti/targets/select.h /vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/iar/targets/select.h /opt/ti/xdctools_3_61_00_16_core/packages/gnu/targets/select.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_types.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_ti_config.h /vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/ti/targets/std.h /vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm/select.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/cdefs.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_types.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/linkage.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdint.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_limits.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_stdint40.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/stdint.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_stdint.h /opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_stdint.h 
+package/package_ti.net.http.c:
+/opt/ti/xdctools_3_61_00_16_core/packages/xdc/std.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdarg.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stddef.h:
+/vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/ti/targets/arm/elf/std.h:
+/vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/ti/targets/select.h:
+/vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/iar/targets/select.h:
+/opt/ti/xdctools_3_61_00_16_core/packages/gnu/targets/select.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_types.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_ti_config.h:
+/vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/ti/targets/std.h:
+/vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm/select.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/cdefs.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_types.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/linkage.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/stdint.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_limits.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/_stdint40.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/stdint.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/machine/_stdint.h:
+/opt/ti/ccs-latest/ccs/tools/compiler/ti-cgt-arm_20.2.0.LTS/include/sys/_stdint.h:

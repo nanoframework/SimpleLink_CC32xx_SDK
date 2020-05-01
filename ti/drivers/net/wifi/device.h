@@ -188,6 +188,7 @@ typedef struct
     Declare the different Options for SL_DEVICE_IOT in sl_DeviceGet and sl_DeviceSet
 */  
 #define SL_DEVICE_IOT_UDID              (41)
+#define SL_DEVICE_DICE_VERSION          (14)
 
 /* Events list to mask/unmask*/
 #define SL_DEVICE_EVENT_CLASS_DEVICE                     (1)
@@ -536,6 +537,7 @@ _i16 sl_DeviceSet(const _u8 DeviceSetId ,const _u8 Option,const _u16 ConfigLen,c
                                                     - SL_DEVICE_GENERAL_PERSISTENT   
                                                 - SL_DEVICE_IOT:
                                                     - SL_DEVICE_IOT_UDID
+                                                    - SL_DEVICE_DICE_VERSION 
                                         
     \param[out] pConfigLen   The length of the allocated memory as input, when the
                              function complete, the value of this parameter would be
@@ -605,6 +607,15 @@ _i16 sl_DeviceSet(const _u8 DeviceSetId ,const _u8 Option,const _u16 ConfigLen,c
         _i16 configLen = sizeof(_u8); 
         _i8 configOpt = SL_DEVICE_GENERAL_PERSISTENT;
         sl_DeviceGet(SL_DEVICE_GENERAL,&configOpt, &configLen,&persistent); 
+    \endcode
+    
+    - Getting DICE version:
+    \code
+        _i8 ver[2] = {0};
+        _i16 configSize = sizeof(ver);
+        _i8 configOpt = SL_DEVICE_DICE_VERSION;
+       
+        sl_DeviceGet(SL_DEVICE_IOT, &configOpt, &configSize,(uint8_t*)(&ver));
     \endcode
 
 */
@@ -821,7 +832,7 @@ _i32 sl_WifiConfig();
     \code
     void CollectStatistics()
     {
-        SlDeviceGetStat_t wlanRXStat;     // this struct is equivalent to SlWlanGetRxStatResponse_t
+        SlDeviceGetStat_t deviceRXStat;     // this struct is equivalent to SlWlanGetRxStatResponse_t
         SlDeviceGetPmStat_t devicePMStat; // PM statistics (new statistics)
         int ret = 0;
 

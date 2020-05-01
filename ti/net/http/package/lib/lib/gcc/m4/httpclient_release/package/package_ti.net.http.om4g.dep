@@ -1,0 +1,13 @@
+package/lib/lib/gcc/m4/httpclient_release/package/package_ti.net.http.om4g:  package/package_ti.net.http.c  /opt/ti/xdctools_3_61_00_16_core/packages/xdc/std.h  /opt/ti/ccs10.0.0.00007/ccs/tools/compiler/gcc-arm-none-eabi-9-2019-q4-major/lib/gcc/arm-none-eabi/9.2.1/include/stdarg.h  /opt/ti/ccs10.0.0.00007/ccs/tools/compiler/gcc-arm-none-eabi-9-2019-q4-major/lib/gcc/arm-none-eabi/9.2.1/include/stddef.h  /vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm/std.h  /vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm/M4.h  /vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm//libs/install-native/arm-none-eabi/include/stdint.h  /vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm//libs/install-native/arm-none-eabi/include/machine/_default_types.h  /vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm//libs/install-native/arm-none-eabi/include/sys/features.h  /vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm//libs/install-native/arm-none-eabi/include/_newlib_version.h  /vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm//libs/install-native/arm-none-eabi/include/sys/_intsup.h  /vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm//libs/install-native/arm-none-eabi/include/sys/_stdint.h
+package/package_ti.net.http.c:
+/opt/ti/xdctools_3_61_00_16_core/packages/xdc/std.h:
+/opt/ti/ccs10.0.0.00007/ccs/tools/compiler/gcc-arm-none-eabi-9-2019-q4-major/lib/gcc/arm-none-eabi/9.2.1/include/stdarg.h:
+/opt/ti/ccs10.0.0.00007/ccs/tools/compiler/gcc-arm-none-eabi-9-2019-q4-major/lib/gcc/arm-none-eabi/9.2.1/include/stddef.h:
+/vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm/std.h:
+/vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm/M4.h:
+/vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm//libs/install-native/arm-none-eabi/include/stdint.h:
+/vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm//libs/install-native/arm-none-eabi/include/machine/_default_types.h:
+/vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm//libs/install-native/arm-none-eabi/include/sys/features.h:
+/vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm//libs/install-native/arm-none-eabi/include/_newlib_version.h:
+/vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm//libs/install-native/arm-none-eabi/include/sys/_intsup.h:
+/vagrant/Q1_eng_19.3.20/sdk_root/kernel/tirtos/packages/gnu/targets/arm//libs/install-native/arm-none-eabi/include/sys/_stdint.h:

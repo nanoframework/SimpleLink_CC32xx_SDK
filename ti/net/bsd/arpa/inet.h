@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@
 #define ti_net_bsd_arpa_inet__include
 
 #include <ti/net/slnetutils.h>
+#include <ti/net/bsd/sys/socket.h>
 
 #ifdef    __cplusplus
 extern "C" {
@@ -47,8 +48,9 @@ extern "C" {
 
 /* utility functions */
 #define inet_aton            SlNetUtil_inetAton
-#define inet_ntop            SlNetUtil_inetNtop
-#define inet_pton            SlNetUtil_inetPton
+
+const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
+int inet_pton(int af, const char *src, void *dst);
 
 #ifdef  __cplusplus
 }

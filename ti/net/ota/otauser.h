@@ -68,10 +68,22 @@ extern int Report(const char *format, ...);
 #define OTA_SERVER_DROPBOX_V2  2
 #define OTA_SERVER_CUSTOM      99
 
+/* The following configuration skips the CDN server handshake,
+ * and simply downloads an OTA TAR file from provided URL
+ * (of an HTTP server). 
+ * Note: For ease of use, a macro definition is provided below for 
+ * the file URL (see OTA_FILE_SERVER_URL) which is used by the application 
+ * to initialize the OTA library. But, the actual URL is assumed to be dynamic
+ * (and temporary). The value should be provided by the applications by 
+ * calling OTA_set just before the OTA gets triggered (i.e. before calling OTA_run).
+ */
+#define OTA_FILE_DOWNLOAD      100
+
 /* USER SHOULD DEFINE HERE WHICH CLOUD TO USE */
 /* -------------------------------------------*/
 //#define OTA_SERVER_TYPE    OTA_SERVER_GITHUB
 #define OTA_SERVER_TYPE    OTA_SERVER_DROPBOX_V2
+//#define OTA_SERVER_TYPE      OTA_FILE_DOWNLOAD
 
 /* OTA server info */
 /* --------------- */
@@ -136,8 +148,10 @@ extern int Report(const char *format, ...);
 #define CdnVendor_ParseRespDir          
 #define CdnVendor_SendReqFileUrl        
 #define CdnVendor_ParseRespFileUrl      
-#define CdnVendor_SendReqFileContent    
 
+#elif OTA_SERVER_TYPE == OTA_FILE_DOWNLOAD
+#define OTA_SERVER_SECURED              1
+#define OTA_SERVER_ROOT_CA_CERT         "DigCert_High_Assurance_CA.der"
 #endif
 
 

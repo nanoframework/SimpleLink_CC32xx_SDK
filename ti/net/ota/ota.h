@@ -90,6 +90,7 @@ typedef struct
 typedef enum
 {
     EXTLIB_OTA_SET_OPT_SERVER_INFO = 0,  /* see Ota_optServerInfo   */
+    EXTLIB_OTA_SET_OPT_FILE_SERVER_URL,
     EXTLIB_OTA_SET_OPT_VENDOR_ID,                    
     EXTLIB_OTA_SET_OPT_ACCEPT_UPDATE,
     EXTLIB_OTA_SET_OPT_DECLINE_UPDATE,

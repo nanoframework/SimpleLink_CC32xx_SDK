@@ -57,12 +57,16 @@ extern "C" {
 #include <ti/posix/iar/pthread.h>
 #include <ti/posix/iar/semaphore.h>
 #include <ti/posix/iar/unistd.h>
+#elif defined (__clang__)
+#include <ti/posix/ticlang/pthread.h>
+#include <ti/posix/ticlang/semaphore.h>
+#include <ti/posix/ticlang/unistd.h>
 #elif defined(__GNUC__)
 #include <ti/posix/gcc/pthread.h>
 #include <ti/posix/gcc/semaphore.h>
 #include <ti/posix/gcc/unistd.h>
 #else
-#error "Unknown compiler, use __TI_COMPILER_VERSION__ __IAR_SYSTEMS_ICC__ or __GNUC__"
+#error "Unknown compiler, use __TI_COMPILER_VERSION__, __IAR_SYSTEMS_ICC__ , __clang__ or __GNUC__"
 #endif
 #else //SL_PLATFORM_MULTI_THREADED
 #include <ti/drivers/dpl/SemaphoreP.h>

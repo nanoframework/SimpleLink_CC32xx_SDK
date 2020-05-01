@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,6 +53,7 @@ usage. Supported use cases include:
 
  \section modules_sec Module Names
  TI's SlNetSock layer is divided into the following software modules:
+     -# \ref SlNet      - Interface for general SlNet services
      -# \ref SlNetSock  - Controls standard client/server sockets options and capabilities
      -# \ref SlNetIf    - Controls standard stack/interface options and capabilities
      -# \ref SlNetUtils - Provides sockets related commands and configuration
@@ -260,7 +261,9 @@ extern "C" {
 
 /* socket level options (SLNETSOCK_LVL_SOCKET) */
 #define SLNETSOCK_OPSOCK_RCV_BUF                                            (8)   /**< Setting TCP receive buffer size (window size) - This options takes SlNetSock_Winsize_t struct as parameter                 */
+#define SLNETSOCK_OPSOCK_SND_BUF                                            (202) /**< Sets or gets the maximum socket send buffer in bytes. - This option takes an int as a parameter                            */
 #define SLNETSOCK_OPSOCK_RCV_TIMEO                                          (20)  /**< Enable receive timeout - This options takes SlNetSock_Timeval_t struct as parameter                                        */
+#define SLNETSOCK_OPSOCK_SND_TIMEO                                          (21)  /**< Enable send timeout - This options takes SlNetSock_Timeval_t struct as parameter                                           */
 #define SLNETSOCK_OPSOCK_KEEPALIVE                                          (9)   /**< Connections are kept alive with periodic messages - This options takes SlNetSock_Keepalive_t struct as parameter           */
 #define SLNETSOCK_OPSOCK_KEEPALIVE_TIME                                     (37)  /**< keepalive time out - This options takes <b>uint32_t</b> as parameter                                                       */
 #define SLNETSOCK_OPSOCK_LINGER                                             (13)  /**< Socket lingers on close pending remaining send/receive packets - This options takes SlNetSock_linger_t struct as parameter */
@@ -269,6 +272,8 @@ extern "C" {
 #define SLNETSOCK_OPSOCK_ERROR                                              (58)  /**< Socket level error code                                                                                                    */
 #define SLNETSOCK_OPSOCK_SLNETSOCKSD                                        (59)  /**< Used by the BSD layer in order to retrieve the slnetsock sd                                                                */
 #define SLNETSOCK_OPSOCK_BROADCAST                                          (200) /**< Enable/disable broadcast signals - This option takes SlNetSock_Broadcast_t struct as parameters                            */
+#define SLNETSOCK_OPSOCK_REUSEADDR                                          (201) /**< Enable/disable allowing reuse of local addresses for bind calls - This option takes an int as a parameter                  */
+#define SLNETSOCK_OPSOCK_REUSEPORT                                          (203) /**< Enable/disable multiple sockets to be bound to an identical socket address. - This option takes an int as a parameter      */
 
 /* IP level options (SLNETSOCK_LVL_IP) */
 #define SLNETSOCK_OPIP_MULTICAST_TTL                                        (61)  /**< Specify the TTL value to use for outgoing multicast packet. - This options takes <b>uint8_t</b> as parameter                                                      */
@@ -332,11 +337,11 @@ typedef enum
 
      /*!
             @c SLNETSOCK_SEC_ATTRIB_DISABLE_CERT_STORE is
-            currently only supported on CC3x20 devices.
+            currently only supported on CC3xxx devices.
 
             The certificate store is a file, provided by TI,
             containing a list of known and trusted root CAs by TI.
-            For more information, see the CC3x20 documentation.
+            For more information, see the CC3xxx documentation.
 
             The certificate store is used only in client mode. Servers
             use a proprietary root CA to authenticate clients, and
@@ -625,8 +630,9 @@ typedef struct SlNetSock_linger_t
 } SlNetSock_linger_t;
 
 /*!
-    \brief      The @c SlNetSock_Timeval_t structure is used in
-                #SLNETSOCK_OPSOCK_RCV_TIMEO socket level option
+    \brief      The @c SlNetSock_Timeval_t structure is used in the
+                #SLNETSOCK_OPSOCK_RCV_TIMEO and #SLNETSOCK_OPSOCK_SND_TIMEO
+                socket level options
 
     \remarks    Note that @c SlNetSock_Timeval_t is intentionally defined
                 to be equivalent to the POSIX-defined <tt>struct
@@ -819,6 +825,10 @@ int16_t SlNetSock_create(int16_t domain, int16_t type, int16_t protocol, uint32_
     \slnetsock_init_precondition
 
     \remark     In the case of TCP, the connection is terminated.
+
+    \remark     After this function returns there is no way to access the socket
+                identified by @c sd. The SlNetSock socket is closed regardless
+                of the status of the underlying interface's socket.
 
     \par    Examples
     \snippet ti/net/test/snippets/slnetif.c SlNetSock_close snippet

@@ -302,6 +302,9 @@ UART_Handle UARTCC32XXDMA_open(UART_Handle handle, UART_Params *params)
 
     Power_setDependency(object->powerMgrId);
 
+    /* Do a software reset of the peripheral */
+    PowerCC32XX_reset(object->powerMgrId);
+
     Power_registerNotify(&object->postNotify, PowerCC32XX_AWAKE_LPDS,
             postNotifyFxn, (uintptr_t)handle);
 

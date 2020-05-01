@@ -46,7 +46,7 @@
  *  ### CC32xx GPIO Driver Configuration #
  *
  *  In order to use the GPIO APIs, the application is required
- *  to provide 3 structures in the Board.c file:
+ *  to provide 3 structures in the ti_drivers_config.c file:
  *
  *  1.  An array of @ref GPIO_PinConfig elements that defines the
  *  initial configuration of each pin used by the application. A
@@ -142,12 +142,12 @@
 #ifndef ti_drivers_GPIOCC32XX__include
 #define ti_drivers_GPIOCC32XX__include
 
+#include <stdint.h>
+#include <ti/drivers/GPIO.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stdint.h>
-#include <ti/drivers/GPIO.h>
 
 /*!
  *  @brief  GPIO device specific driver configuration structure
@@ -173,7 +173,7 @@ extern "C" {
  *  };
  *  @endcode
  */
-typedef struct GPIOCC32XX_Config {
+typedef struct {
     /*! Pointer to the board's GPIO_PinConfig array */
     GPIO_PinConfig  *pinConfigs;
 

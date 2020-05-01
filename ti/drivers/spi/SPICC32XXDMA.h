@@ -176,15 +176,15 @@
 #ifndef ti_drivers_spi_SPICC32XXDMA__include
 #define ti_drivers_spi_SPICC32XXDMA__include
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <ti/drivers/dpl/HwiP.h>
 #include <ti/drivers/dpl/SemaphoreP.h>
 #include <ti/drivers/Power.h>
 #include <ti/drivers/SPI.h>
 #include <ti/drivers/dma/UDMACC32XX.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  *  @addtogroup SPI_STATUS
@@ -306,7 +306,7 @@ extern const SPI_FxnTable SPICC32XXDMA_fxnTable;
  *  };
  *  @endcode
  */
-typedef struct SPICC32XXDMA_HWAttrsV1 {
+typedef struct {
     /*! SPICC32XXDMA Peripheral's base address */
     uint32_t   baseAddr;
 
@@ -364,7 +364,7 @@ typedef struct SPICC32XXDMA_HWAttrsV1 {
  *
  *  The application must not access any member variables of this structure!
  */
-typedef struct SPICC32XXDMA_Object {
+typedef struct {
     HwiP_Handle        hwiHandle;
     Power_NotifyObj    notifyObj;
     SemaphoreP_Handle  transferComplete;
